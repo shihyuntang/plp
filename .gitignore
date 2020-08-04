@@ -4,3 +4,4 @@
 *.recipes
 *.tmp
 html_*
+.DS_Store
