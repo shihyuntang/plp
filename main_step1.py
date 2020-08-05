@@ -9,12 +9,12 @@ import numpy as np
 
 
 if __name__ == "__main__":
-    print('Step 2...')
+    print('Step 1...')
 
     parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
+                                     prog        = 'igrins plp v2.2 modified for IGRINS RV, Spectra Radial Velocity Pipeline',
                                      description = '''
-                                     ??
+                                     These code, main_step1 and 2, helps user to make input fits files for the IGRINS_RV code.
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -26,6 +26,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     indata_dir = './indata/'
 
+    if not os.path.isdir('./final_A_B_spec'):
+        os.mkdir('./final_A_B_spec')
+
+    if not os.path.isdir('./run_sh'):
+        os.mkdir('./run_sh')
+
+    if not os.path.isdir('./recipes'):
+        os.mkdir('./recipes')
 
     # Making Recipes -----------------------------------------------------------
 

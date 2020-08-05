@@ -7,12 +7,12 @@ import numpy as np
 
 
 if __name__ == "__main__":
-    print('Step 3...')
+    print('Step 2...')
 
     parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
+                                     prog        = 'igrins plp v2.2 modified for IGRINS RV, Spectra Radial Velocity Pipeline',
                                      description = '''
-                                     ??
+                                     These code, main_step1 and 2, helps user to make input fits files for the IGRINS_RV code.
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
