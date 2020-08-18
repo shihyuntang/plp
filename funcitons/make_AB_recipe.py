@@ -33,7 +33,7 @@ def make_AB_recipe(target_n, target_have):
     print('done')
 
     print('Clearing dir ./outdata/ ')
-    os.system('rm -r ./outdata/*' )
+    os.system('rm ./outdata/*' )
     print('done')
 
     for i in target_have:
@@ -49,6 +49,9 @@ def make_AB_recipe(target_n, target_have):
 
         recipe  = pd.read_csv(new_recipe_fh1.format(utdate), comment='#')
         science = recipe[recipe['OBJNAME'].str.contains(target_n, regex=True, flags=re.IGNORECASE)]
+
+        if len(science) == 0:
+            sys.exit(f'ERROR! CANNOT FIND {target_n} IN RECIPE FILE, QUITE. CHECK IF THERE IS A SPACE MISSING.')
 
         for jj, x in science.iterrows():
             _frames = x[' FRAMETYPES'].strip().split(' ')
@@ -99,14 +102,6 @@ def mkdir(dirpath):
 def move_data(target_n, target_have):
     utdates = target_have
 
-    indata          = pwd + '/indata/{0:8d}/'
-    indata_file     = indata + 'SDC{1:s}_{0:8d}_{2:04d}.fits'
-    recipe_fh       = pwd + '/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
-    new_recipe_fh   = pwd + '/recipe_logs/'
-    new_recipe_fh_old   = pwd + '/recipe_logs/' + '{0:8d}.recipes.tmp'
-    new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
-
-
     in_spec_fh  = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.spec.fits'
     in_sn_fh    = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.sn.fits'
 
@@ -130,7 +125,7 @@ def move_data(target_n, target_have):
         mkdir("./final_A_B_spec/{0:s}/{1:d}/AB/".format(target_n.replace(' ', ''), ut))
         mkdir("./final_A_B_spec/{0:s}/{1:d}/A/".format(target_n.replace(' ', ''), ut))
         mkdir("./final_A_B_spec/{0:s}/{1:d}/B/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{0:s}/std/{1:d}/AB/".format(target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{0:s}/std/{1:d}/AB/".format(target_n.replace(' ', ''), ut[:8]))
 
         for kk, x in science.iterrows():
             _frames = x[' FRAMETYPES'].strip().split(' ')
@@ -161,3 +156,86 @@ def move_data(target_n, target_have):
                 except:
                     print("Failed to copy: " +  in_spec_fh.format(ut, b, _ids[0]))
                     pass
+
+
+
+def move_data_split(target_n, target_have):
+    utdates = target_have
+
+    in_spec_fh  = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.spec.fits'
+    in_sn_fh    = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.sn.fits'
+
+    out_spec_fht = './final_A_B_spec/{0:s}/{1:s}/{2:s}/SDC{3:s}_{4:d}_{5:04d}.spec.fits'
+    out_sn_fht   = './final_A_B_spec/{0:s}/{1:s}/{2:s}/SDC{3:s}_{4:d}_{5:04d}.sn.fits'
+
+    out_spec_fhs = './final_A_B_spec/{0:s}/{1:s}/{2:d}/{3:s}/SDC{4:s}_{2:d}_{5:04d}.spec.fits'
+    out_sn_fhs   = './final_A_B_spec/{0:s}/{1:s}/{2:d}/{3:s}/SDC{4:s}_{2:d}_{5:04d}.sn.fits'
+
+    new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:s}.recipes'
+
+    for jj, ut in enumerate(utdates):
+        print('##############')
+        print("{}".format(ut))
+
+        recipe  = pd.read_csv(new_recipe_fh_new.format(ut[:8]), comment='#')
+        science = recipe[recipe['OBJNAME'].str.contains(target_n)]
+        science = science.reset_index()
+
+        science['GROUP1_04d'] = ['{:04d}'.format( int(science[' GROUP1'][i])) for i in range(len(science))]
+        science['GROUP1_04d'] = science['GROUP1_04d'].astype(str)
+
+        std     = recipe[recipe[' OBJTYPE'].str.contains('STD')]
+
+        mkdir("./final_A_B_spec/{0:s}/{1:s}/AB/".format(target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{0:s}/{1:s}/A/".format(target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{0:s}/{1:s}/B/".format(target_n.replace(' ', ''), ut))
+
+        mkdir("./final_A_B_spec/{0:s}/std/{1:s}/AB/".format(target_n.replace(' ', ''), ut[:8]))
+
+
+        for kk, x in science.iterrows():
+            _frames = x[' FRAMETYPES'].strip().split(' ')
+            _ids = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+
+            for b in ['H', 'K']:
+                ids_id = _ids[0]
+                if ids_id > 1000:
+                    ids_id -= 1000
+
+                print(ids_id)
+                print(b)
+                print(science['GROUP1_04d'])
+                print( str(int(ut[-3:])) )
+
+                print(science[' OBSIDS'][ science['GROUP1_04d'].str.contains( ut[-4:], regex=False) ])
+
+                print(ut, b, science[' OBSIDS'][ science['GROUP1_04d'].str.contains(ut[-4:], regex=False) ].str.contains('{}'.format(ids_id), regex=False).bool() )
+
+                if science[' OBSIDS'][ science['GROUP1_04d'].str.contains(ut[-4:], regex=False) ].str.contains('{}'.format(ids_id), regex=False).bool() :
+                    if _ids[0] < 1000:
+                        if not os.path.isdir( out_spec_fht.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), _ids[0]) ):
+                            try:
+                                copyfile(in_spec_fh.format(int(ut[:8]), b, _ids[0]), out_spec_fht.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), _ids[0]))
+                                copyfile(in_sn_fh.format(int(ut[:8]), b, _ids[0]), out_sn_fht.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), _ids[0]))
+                            except:
+                                print("Failed to copy: " +  in_spec_fh.format(int(ut[:8]), b, _ids[0]))
+                                pass
+                    else:
+                        if not os.path.isdir(  out_spec_fht.format(target_n.replace(' ',''), ut, _frames[0], b, int(ut[:8]), _ids[0]-1000) ):
+                            try:
+                                copyfile(in_spec_fh.format(int(ut[:8]), b, _ids[0]), out_spec_fht.format(target_n.replace(' ',''), ut, _frames[0], b, int(ut[:8]), _ids[0]-1000))
+                                copyfile(in_sn_fh.format(int(ut[:8]), b, _ids[0]), out_sn_fht.format(target_n.replace(' ',''), ut, _frames[0], b, int(ut[:8]), _ids[0]-1000))
+                            except:
+                                print("Failed to copy: " + in_spec_fh.format(int(ut[:8]), b, _ids[0]))
+                                pass
+        for kk, x in std.iterrows():
+            _frames = x[' FRAMETYPES'].strip().split(' ')
+            _ids = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+            for b in ['H', 'K']:
+                if not os.path.isdir(  out_spec_fhs.format(target_n.replace(' ',''), 'std', int(ut[:8]), 'AB', b, _ids[0]) ):
+                    try:
+                        copyfile(in_spec_fh.format(int(ut[:8]), b, _ids[0]), out_spec_fhs.format(target_n.replace(' ',''), 'std', int(ut[:8]), 'AB', b, _ids[0]))
+                        copyfile(in_sn_fh.format(int(ut[:8]), b, _ids[0]), out_sn_fhs.format(target_n.replace(' ',''), 'std', int(ut[:8]), 'AB', b, _ids[0]))
+                    except:
+                        print("Failed to copy: " +  in_spec_fh.format(ut, b, _ids[0]))
+                        pass

@@ -1,6 +1,7 @@
 import funcitons.make_AB_recipe as make_AB_recipe
 import sys, os, argparse
 import numpy as np
+from astropy.table import Table
 
 
 
@@ -26,10 +27,17 @@ if __name__ == "__main__":
     new_tar_list = os.listdir('./recipes/{}_recipes'.format(args.targname.replace(' ','')))
     target_have = np.sort([ int(dump[:8]) for dump in new_tar_list if dump[-1]=='p'])
 
+    tar_night_num = []
+    for i in target_have:
+        temp = Table.read( './recipes/{}_recipes/{}.recipes.tmp'.format(args.targname.replace(' ',''), i), format='ascii' )
+        for j in temp['GROUP1'][temp['OBJNAME'] == '{}'.format(args.targname)]:
+            tar_night_num.append('{}_{:04d}'.format(i, int(j) ))
+
+    target_have = tar_night_num
     tenn = ''
     for iii in target_have:
         tenn = tenn + str(iii) + ' '
     print('-------------------------------------')
     print('process dates:\n', tenn)
     #target_have = np.array([20141123, 20151106, 20151108, 20151111])
-    make_AB_recipe.move_data(args.targname, target_have)
+    make_AB_recipe.move_data_split(args.targname, target_have)
