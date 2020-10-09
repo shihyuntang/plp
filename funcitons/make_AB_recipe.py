@@ -9,233 +9,280 @@ from shutil import copyfile
 
 pwd = os.getcwd()
 
-def make_AB_recipe(target_n, target_have):
+
+def make_AB_recipe(target_n, utdates):
 
     indata          = pwd + '/indata/{0:8d}/'
     indata_file     = indata + 'SDC{1:s}_{0:8d}_{2:04d}.fits'
-    recipe_fh       =  pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
+
+    recipe_fh        = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
     new_recipe_fh1   = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes'
 
+    # plp read recipes folder
     new_recipe_fh2   = pwd + '/recipe_logs/{0:8d}.recipes'
 
-    new_recipe_fh_old   = pwd + '/recipe_logs/' + '{0:8d}.recipes.tmp'
-    new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
-
-    stellar_ab_str      = target_n +', TAR, 1, 1, {0:f}, STELLAR_AB, {1:02d} {2:02d}, {3:s} {4:s}\n'
-    stellar_onoff_str   = target_n +', TAR, 1, 1, {0:f}, STELLAR_AB, {1:02d} {2:02d}, {3:s} {4:s}\n'
-    max_ind = 1000
+    # new printout in the recipes
+    a0std_str  = '{:s}, STD, {:d}, 1, {:f}, A0V_AB, {:02d} {:02d}, {:s} {:s}\n'
+    target_str = '{:s}, TAR, {:d}, 1, {:f}, STELLAR_AB, {:02d} {:02d}, {:s} {:s}\n'
 
     print('-------------------------------------')
-    print('Making A/B/AB recipes under ./recipe_log')
+    print('Making A/B/AB recipes under plp read folder: ./recipe_log')
 
     print('Clearing dir ./recipe_log/ ')
     os.system('rm ./recipe_logs/*' )
     print('done')
 
-    print('Clearing dir ./outdata/ ')
-    os.system('rm ./outdata/*' )
-    print('done')
+    # print('Clearing dir ./outdata/ ')
+    # os.system('rm ./outdata/*' )
+    # print('done')
 
-    for i in target_have:
-        # copy to ./recipe_log
-        os.system("cp " + recipe_fh.format(i) + " " + new_recipe_fh1.format(i) )
+    # make a copy of .recipes.temp to .recipes
+    for i in utdates:
+        # os.system("cp " + recipe_fh.format(i) + " " + new_recipe_fh1.format(i) )
+        # remove origin ABBA rows
+        remove_rows = ['STELLAR_AB', 'A0V_AB']
+        with open( recipe_fh.format(i) ) as oldfile, open( new_recipe_fh1.format(i), 'w') as newfile:
+            for line in oldfile:
+                if not any(remove_row in line for remove_row in remove_rows):
+                    newfile.write(line)
 
     # making A/B/AB recipe
-    utdates = target_have
-
-    temp = 1
-    for utdate in utdates:
+    for temp, utdate in enumerate(utdates, start=1):
         print('\r', 'processing: {}, {:.2f}% {}/{}'.format(utdate, 100*temp/len(utdates), temp, len(utdates)), end=" ")
 
-        recipe  = pd.read_csv(new_recipe_fh1.format(utdate), comment='#')
+        # read in .recipes.temp
+        recipe  = pd.read_csv(recipe_fh.format(utdate), comment='#')
+
+        # extract science & A0 standard star
         science = recipe[recipe['OBJNAME'].str.contains(target_n, regex=True, flags=re.IGNORECASE)]
+        A0std   = recipe[recipe[' OBJTYPE'].str.contains('STD', regex=True, flags=re.IGNORECASE)]
 
         if len(science) == 0:
-            sys.exit(f'ERROR! CANNOT FIND {target_n} IN RECIPE FILE, QUITE. CHECK IF THERE IS A SPACE MISSING.')
+            sys.exit(f'\nERROR! CANNOT FIND {target_n} IN RECIPE FILE, QUITE. CHECK IF THERE IS A "SPACE" MISSING.')
 
-        for jj, x in science.iterrows():
-            _frames = x[' FRAMETYPES'].strip().split(' ')
+#-------- STD ------------------------------------------
+        for jj, x in A0std.iterrows():
+            # extract the nodding sequences (e.g., ABBA)
+            _frames = np.array( x[' FRAMETYPES'].strip().split(' ') )
+            # extract the observation IDs for each nodding
             _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
 
-            if np.mod(len(_ids), 2) != 0:
+            # check if A nodding's number match the B's
+            if np.where(_frames=='A')[0].size != np.where(_frames=='B')[0].size:
+                sys.exit(f"ERROR! For STD, A nodding sequence's number must match B's!!!")
+
+            # grouping AB sets: e.g.,  frames = [('A', 'B'), ('B', 'A'), ('A', 'B'), ('B', 'A')]
+            frames  = list(zip(_frames[::2], _frames[1::2]))
+            ids     = list(zip(_ids[::2], _ids[1::2]))
+
+            for kk, ff in zip(ids, frames):
+                # write (append) new rows in the .recipes file
+                with open(new_recipe_fh1.format(utdate), 'a+') as fh:
+                    #               tar_name       exp_time                 ----ids----   --frames--
+                    # target_str = '{:s}, TAR, 1, 1, {:f}, STELLAR_AB,     {:02d} {:02d}, {:s} {:s}\n'
+                    fh.write(a0std_str.format(x['OBJNAME'], kk[0], x[' EXPTIME'], kk[0], kk[1], ff[0], ff[1]))
+
+#-------- science target--------------------------------
+        for jj, x in science.iterrows():
+            # extract the nodding sequences (e.g., ABBA)
+            _frames = np.array( x[' FRAMETYPES'].strip().split(' ') )
+            # extract the observation IDs for each nodding
+            _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+
+            # check if A nodding's number match the B's
+            if np.where(_frames=='A')[0].size != np.where(_frames=='B')[0].size:
                 print('####################################')
-                print('{} ERROR number of A/B in recipe is not even'.format(utdate))
-                print('Will remove {} from following process'.format(utdate))
+                print('ERROR!! number of the A/B nodding in night {} do not match'.format(utdate))
+                print('Remove night {} from following process'.format(utdate))
                 print('####################################')
-                target_have = np.delete(target_have, temp-1)
+                utdates = np.delete(utdates, temp-1)
                 break
 
-            ids     = list(zip(_ids[::2], _ids[1::2]))
+            # grouping AB sets: e.g.,  frames = [('A', 'B'), ('B', 'A'), ('A', 'B'), ('B', 'A')]
             frames  = list(zip(_frames[::2], _frames[1::2]))
+            ids     = list(zip(_ids[::2], _ids[1::2]))
 
-            for kk in _ids: # replicate all the files
-                for b in ['H', 'K']:
-                    if not os.path.exists(indata_file.format(utdate, b, max_ind + kk)):
-                        copyfile(indata_file.format(utdate, b, kk), indata_file.format(utdate, b, max_ind + kk))
             for kk, ff in zip(ids, frames):
-                for b in ['H', 'K']:
-                    try:
-                        hduA = fits.open(indata_file.format(utdate, b, max_ind + kk[0]))
-                        hduB = fits.open(indata_file.format(utdate, b, max_ind + kk[1]))
-
-                        data_new = np.min([hduA[0].data, hduB[0].data], axis=0)
-                        hdul = fits.PrimaryHDU(data_new, header=hduA[0].header)
-                        hdul.writeto(indata_file.format(utdate, b, max_ind + kk[0] + 1000), overwrite=True)
-                    except:
-                        print('error occures at date {}, please check it and RE RUN main1.py'.format(utdate))
+                # write (append) new rows in the .recipes file
                 with open(new_recipe_fh1.format(utdate), 'a+') as fh:
-                    fh.write(stellar_onoff_str.format(x[' EXPTIME'], kk[0] + 1000,    kk[0] + max_ind + 1000, ff[0], ff[1]))
-                    fh.write(stellar_onoff_str.format(x[' EXPTIME'], kk[1] + max_ind, kk[0] + max_ind + 1000, ff[1], ff[0]))
-        temp += 1
+                    #               tar_name       exp_time                 ----ids----   --frames--
+                    # target_str = '{:s}, TAR, 1, 1, {:f}, STELLAR_AB,     {:02d} {:02d}, {:s} {:s}\n'
+                    fh.write(target_str.format(x['OBJNAME'], kk[0], x[' EXPTIME'], kk[0], kk[1], ff[0], ff[1]))
 
-    for i in target_have:
+    # copy the .recipes to the plp read dir
+    for i in utdates:
         os.system("cp " + new_recipe_fh1.format(i) + " " + new_recipe_fh2.format(i) )
-    # New target_hav ing list
-    return target_have
 
+    return utdates
+
+############################################################################################
 
 def mkdir(dirpath):
     if not os.path.exists(dirpath):
         os.makedirs(dirpath)
 
 
-def move_data(target_n, target_have):
-    utdates = target_have
+def move_data(target_n, utdates):
+    # plp outdata dir AB
+    # in_spec_fh  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    # in_sn_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    # plp outdata dir A/B
+    in_spec_fhab  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.spec.fits'
+    in_sn_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.sn.fits'
 
-    in_spec_fh  = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.spec.fits'
-    in_sn_fh    = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.sn.fits'
+    # final spec store dir for TAR
+    out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_tar   = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
-    out_spec_fht = './final_A_B_spec/{0:s}/{1:d}/{2:s}/SDC{3:s}_{1:d}_{4:04d}.spec.fits'
-    out_sn_fht   = './final_A_B_spec/{0:s}/{1:d}/{2:s}/SDC{3:s}_{1:d}_{4:04d}.sn.fits'
+    # final spec store dir for STD
+    out_spec_fh_std = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_std   = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
-    out_spec_fhs = './final_A_B_spec/{0:s}/{1:s}/{2:d}/{3:s}/SDC{4:s}_{2:d}_{5:04d}.spec.fits'
-    out_sn_fhs   = './final_A_B_spec/{0:s}/{1:s}/{2:d}/{3:s}/SDC{4:s}_{2:d}_{5:04d}.sn.fits'
-
-    new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
+    # new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
+    temp_recipe_fh      = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
 
     for jj, ut in enumerate(utdates):
-        print("{0:d}".format(ut))
+        print("{:d}".format(ut))
 
-        recipe  = pd.read_csv(new_recipe_fh_new.format(ut), comment='#')
+        recipe  = pd.read_csv(temp_recipe_fh.format(ut), comment='#')
         science = recipe[recipe['OBJNAME'].str.contains(target_n)]
         science = science.reset_index()
 
-        std     = recipe[recipe[' OBJTYPE'].str.contains('STD')]
+        A0std   = recipe[recipe[' OBJTYPE'].str.contains('STD')]
 
-        mkdir("./final_A_B_spec/{0:s}/{1:d}/AB/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{0:s}/{1:d}/A/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{0:s}/{1:d}/B/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{0:s}/std/{1:d}/AB/".format(target_n.replace(' ', ''), ut[:8]))
+        # make final spec store dir TAR
+        # mkdir("./final_A_B_spec/{:s}/{:d}/AB/".format(target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}/{:d}/A/".format( target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}/{:d}/B/".format( target_n.replace(' ', ''), ut))
 
+        # make final spec store dir STD
+        # mkdir("./final_A_B_spec/{:s}/std/{:d}/AB/".format(target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), ut))
+
+        # base on the info. in .recipes file to move each spec to the right A or B folder
+#-------- science target--------------------------------
         for kk, x in science.iterrows():
             _frames = x[' FRAMETYPES'].strip().split(' ')
-            _ids = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+            _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
 
-            for b in ['H', 'K']:
-                if _ids[0] < 1000:
-                    try:
-                        copyfile(in_spec_fh.format(ut, b, _ids[0]), out_spec_fht.format(target_n.replace(' ',''), ut, 'AB', b, _ids[0]))
-                        copyfile(in_sn_fh.format(ut, b, _ids[0]), out_sn_fht.format(target_n.replace(' ',''), ut, 'AB', b, _ids[0]))
-                    except:
-                        print("Failed to copy: " +  in_spec_fh.format(ut, b, _ids[0]))
-                        pass
-                else:
-                    try:
-                        copyfile(in_spec_fh.format(ut, b, _ids[0]), out_spec_fht.format(target_n.replace(' ',''), ut, _frames[0], b, _ids[0]-1000))
-                        copyfile(in_sn_fh.format(ut, b, _ids[0]), out_sn_fht.format(target_n.replace(' ',''), ut, _frames[0], b, _ids[0]-1000))
-                    except:
-                        print("Failed to copy: " + in_spec_fh.format(ut, b, _ids[0]))
-                        pass
-        for kk, x in std.iterrows():
+            ids     = list(zip(_ids[::2], _ids[1::2]))
+            frames  = list(zip(_frames[::2], _frames[1::2]))
+
+            for kk, ff in zip(ids, frames):
+                for b in ['H', 'K']:
+                    # copy to AB folder
+                    # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+                    # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+                    # copy to A or B folder
+                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+
+                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                # out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+
+#-------- STD ------------------------------------------
+        for kk, x in A0std.iterrows():
             _frames = x[' FRAMETYPES'].strip().split(' ')
-            _ids = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
-            for b in ['H', 'K']:
-                try:
-                    copyfile(in_spec_fh.format(ut, b, _ids[0]), out_spec_fhs.format(target_n.replace(' ',''), 'std', ut, 'AB', b, _ids[0]))
-                    copyfile(in_sn_fh.format(ut, b, _ids[0]), out_sn_fhs.format(target_n.replace(' ',''), 'std', ut, 'AB', b, _ids[0]))
-                except:
-                    print("Failed to copy: " +  in_spec_fh.format(ut, b, _ids[0]))
-                    pass
+            _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+
+            ids     = list(zip(_ids[::2], _ids[1::2]))
+            frames  = list(zip(_frames[::2], _frames[1::2]))
+
+            for kk, ff in zip(ids, frames):
+                for b in ['H', 'K']:
+                    # copy to AB folder
+                    # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+                    # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+                    # copy to A or B folder
+                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+
+                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
 
 
 
-def move_data_split(target_n, target_have):
-    utdates = target_have
+######################
 
-    in_spec_fh  = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.spec.fits'
-    in_sn_fh    = pwd + '/outdata/{0:d}/SDC{1:s}_{0:d}_{2:04d}.sn.fits'
+def move_data_split(target_n, utdates):
+    # plp outdata dir AB
+    # in_spec_fh  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    # in_sn_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    # plp outdata dir A/B
+    in_spec_fhab  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.spec.fits'
+    in_sn_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.sn.fits'
 
-    out_spec_fht = './final_A_B_spec/{0:s}/{1:s}/{2:s}/SDC{3:s}_{4:d}_{5:04d}.spec.fits'
-    out_sn_fht   = './final_A_B_spec/{0:s}/{1:s}/{2:s}/SDC{3:s}_{4:d}_{5:04d}.sn.fits'
+    # final spec store dir for TAR
+    out_spec_fh_tar = './final_A_B_spec/{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_tar   = './final_A_B_spec/{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
-    out_spec_fhs = './final_A_B_spec/{0:s}/{1:s}/{2:d}/{3:s}/SDC{4:s}_{2:d}_{5:04d}.spec.fits'
-    out_sn_fhs   = './final_A_B_spec/{0:s}/{1:s}/{2:d}/{3:s}/SDC{4:s}_{2:d}_{5:04d}.sn.fits'
+    # final spec store dir for STD
+    out_spec_fh_std = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_std   = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
-    new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:s}.recipes'
+    # new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
+    temp_recipe_fh      = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
 
     for jj, ut in enumerate(utdates):
-        print('##############')
         print("{}".format(ut))
 
-        recipe  = pd.read_csv(new_recipe_fh_new.format(ut[:8]), comment='#')
+        recipe  = pd.read_csv(temp_recipe_fh.format( int(ut[:8]) ), comment='#')
         science = recipe[recipe['OBJNAME'].str.contains(target_n)]
         science = science.reset_index()
 
-        science['GROUP1_04d'] = ['{:04d}'.format( int(science[' GROUP1'][i])) for i in range(len(science))]
-        science['GROUP1_04d'] = science['GROUP1_04d'].astype(str)
+        A0std   = recipe[recipe[' OBJTYPE'].str.contains('STD')]
 
-        std     = recipe[recipe[' OBJTYPE'].str.contains('STD')]
+        # make final spec store dir TAR
+        # mkdir("./final_A_B_spec/{:s}/{:s}/AB/".format(target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}/{:s}/A/".format( target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}/{:s}/B/".format( target_n.replace(' ', ''), ut))
 
-        mkdir("./final_A_B_spec/{0:s}/{1:s}/AB/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{0:s}/{1:s}/A/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{0:s}/{1:s}/B/".format(target_n.replace(' ', ''), ut))
+        # make final spec store dir STD
+        # mkdir("./final_A_B_spec/{:s}/std/{:d}/AB/".format(target_n.replace(' ', ''), int(ut[:8]) ))
+        mkdir("./final_A_B_spec/{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), int(ut[:8]) ))
+        mkdir("./final_A_B_spec/{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), int(ut[:8]) ))
 
-        mkdir("./final_A_B_spec/{0:s}/std/{1:s}/AB/".format(target_n.replace(' ', ''), ut[:8]))
-
-
+        # base on the info. in .recipes file to move each spec to the right A or B folder
+#-------- science target--------------------------------
         for kk, x in science.iterrows():
             _frames = x[' FRAMETYPES'].strip().split(' ')
-            _ids = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+            _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
 
-            for b in ['H', 'K']:
-                ids_id = _ids[0]
-                if ids_id > 1000:
-                    ids_id -= 1000
+            ids     = list(zip(_ids[::2], _ids[1::2]))
+            frames  = list(zip(_frames[::2], _frames[1::2]))
 
-                print(ids_id)
-                print(b)
-                print(science['GROUP1_04d'])
-                print( str(int(ut[-3:])) )
+            for kk, ff in zip(ids, frames):
+                if int(ut[-4:]) in _ids:
+                    for b in ['H', 'K']:
+                        # copy to AB folder
+                        # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), kk[0]))
+                        # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_tar.format(  target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), kk[0]))
+                        # copy to A or B folder
+                        copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, int(ut[:8]), kk[0]))
+                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]),  out_sn_fh_tar.format(  target_n.replace(' ',''), ut, ff[0], b, int(ut[:8]), kk[0]))
 
-                print(science[' OBSIDS'][ science['GROUP1_04d'].str.contains( ut[-4:], regex=False) ])
+                        copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, int(ut[:8]), kk[1]))
+                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_tar.format(  target_n.replace(' ',''), ut, ff[1], b, int(ut[:8]), kk[1]))
+                # out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
 
-                print(ut, b, science[' OBSIDS'][ science['GROUP1_04d'].str.contains(ut[-4:], regex=False) ].str.contains('{}'.format(ids_id), regex=False).bool() )
-
-                if science[' OBSIDS'][ science['GROUP1_04d'].str.contains(ut[-4:], regex=False) ].str.contains('{}'.format(ids_id), regex=False).bool() :
-                    if _ids[0] < 1000:
-                        if not os.path.isdir( out_spec_fht.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), _ids[0]) ):
-                            try:
-                                copyfile(in_spec_fh.format(int(ut[:8]), b, _ids[0]), out_spec_fht.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), _ids[0]))
-                                copyfile(in_sn_fh.format(int(ut[:8]), b, _ids[0]), out_sn_fht.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), _ids[0]))
-                            except:
-                                print("Failed to copy: " +  in_spec_fh.format(int(ut[:8]), b, _ids[0]))
-                                pass
-                    else:
-                        if not os.path.isdir(  out_spec_fht.format(target_n.replace(' ',''), ut, _frames[0], b, int(ut[:8]), _ids[0]-1000) ):
-                            try:
-                                copyfile(in_spec_fh.format(int(ut[:8]), b, _ids[0]), out_spec_fht.format(target_n.replace(' ',''), ut, _frames[0], b, int(ut[:8]), _ids[0]-1000))
-                                copyfile(in_sn_fh.format(int(ut[:8]), b, _ids[0]), out_sn_fht.format(target_n.replace(' ',''), ut, _frames[0], b, int(ut[:8]), _ids[0]-1000))
-                            except:
-                                print("Failed to copy: " + in_spec_fh.format(int(ut[:8]), b, _ids[0]))
-                                pass
-        for kk, x in std.iterrows():
+#-------- STD ------------------------------------------
+        for kk, x in A0std.iterrows():
             _frames = x[' FRAMETYPES'].strip().split(' ')
-            _ids = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
-            for b in ['H', 'K']:
-                if not os.path.isdir(  out_spec_fhs.format(target_n.replace(' ',''), 'std', int(ut[:8]), 'AB', b, _ids[0]) ):
-                    try:
-                        copyfile(in_spec_fh.format(int(ut[:8]), b, _ids[0]), out_spec_fhs.format(target_n.replace(' ',''), 'std', int(ut[:8]), 'AB', b, _ids[0]))
-                        copyfile(in_sn_fh.format(int(ut[:8]), b, _ids[0]), out_sn_fhs.format(target_n.replace(' ',''), 'std', int(ut[:8]), 'AB', b, _ids[0]))
-                    except:
-                        print("Failed to copy: " +  in_spec_fh.format(ut, b, _ids[0]))
-                        pass
+            _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+
+            ids     = list(zip(_ids[::2], _ids[1::2]))
+            frames  = list(zip(_frames[::2], _frames[1::2]))
+
+            for kk, ff in zip(ids, frames):
+                for b in ['H', 'K']:
+                    # copy to AB folder
+                    # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                    # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                    # copy to A or B folder
+                    copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+                    copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+
+                    copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+                    copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
