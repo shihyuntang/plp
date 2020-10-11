@@ -40,7 +40,7 @@ def make_AB_recipe(target_n, utdates):
     for i in utdates:
         # os.system("cp " + recipe_fh.format(i) + " " + new_recipe_fh1.format(i) )
         # remove origin ABBA rows
-        remove_rows = ['STELLAR_AB', 'A0V_AB']
+        remove_rows = ['STELLAR_AB'] # only do target for seperate # , 'A0V_AB'
         with open( recipe_fh.format(i) ) as oldfile, open( new_recipe_fh1.format(i), 'w') as newfile:
             for line in oldfile:
                 if not any(remove_row in line for remove_row in remove_rows):
@@ -61,26 +61,26 @@ def make_AB_recipe(target_n, utdates):
             sys.exit(f'\nERROR! CANNOT FIND {target_n} IN RECIPE FILE, QUITE. CHECK IF THERE IS A "SPACE" MISSING.')
 
 #-------- STD ------------------------------------------
-        for jj, x in A0std.iterrows():
-            # extract the nodding sequences (e.g., ABBA)
-            _frames = np.array( x[' FRAMETYPES'].strip().split(' ') )
-            # extract the observation IDs for each nodding
-            _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
-
-            # check if A nodding's number match the B's
-            if np.where(_frames=='A')[0].size != np.where(_frames=='B')[0].size:
-                sys.exit(f"ERROR! For STD, A nodding sequence's number must match B's!!!")
-
-            # grouping AB sets: e.g.,  frames = [('A', 'B'), ('B', 'A'), ('A', 'B'), ('B', 'A')]
-            frames  = list(zip(_frames[::2], _frames[1::2]))
-            ids     = list(zip(_ids[::2], _ids[1::2]))
-
-            for kk, ff in zip(ids, frames):
-                # write (append) new rows in the .recipes file
-                with open(new_recipe_fh1.format(utdate), 'a+') as fh:
-                    #               tar_name       exp_time                 ----ids----   --frames--
-                    # target_str = '{:s}, TAR, 1, 1, {:f}, STELLAR_AB,     {:02d} {:02d}, {:s} {:s}\n'
-                    fh.write(a0std_str.format(x['OBJNAME'], kk[0], x[' EXPTIME'], kk[0], kk[1], ff[0], ff[1]))
+        # for jj, x in A0std.iterrows():
+        #     # extract the nodding sequences (e.g., ABBA)
+        #     _frames = np.array( x[' FRAMETYPES'].strip().split(' ') )
+        #     # extract the observation IDs for each nodding
+        #     _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+        #
+        #     # check if A nodding's number match the B's
+        #     if np.where(_frames=='A')[0].size != np.where(_frames=='B')[0].size:
+        #         sys.exit(f"ERROR! For STD, A nodding sequence's number must match B's!!!")
+        #
+        #     # grouping AB sets: e.g.,  frames = [('A', 'B'), ('B', 'A'), ('A', 'B'), ('B', 'A')]
+        #     frames  = list(zip(_frames[::2], _frames[1::2]))
+        #     ids     = list(zip(_ids[::2], _ids[1::2]))
+        #
+        #     for kk, ff in zip(ids, frames):
+        #         # write (append) new rows in the .recipes file
+        #         with open(new_recipe_fh1.format(utdate), 'a+') as fh:
+        #             #               tar_name       exp_time                 ----ids----   --frames--
+        #             # target_str = '{:s}, TAR, 1, 1, {:f}, STELLAR_AB,     {:02d} {:02d}, {:s} {:s}\n'
+        #             fh.write(a0std_str.format(x['OBJNAME'], kk[0], x[' EXPTIME'], kk[0], kk[1], ff[0], ff[1]))
 
 #-------- science target--------------------------------
         for jj, x in science.iterrows():
