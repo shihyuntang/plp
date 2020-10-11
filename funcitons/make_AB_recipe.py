@@ -170,16 +170,16 @@ def move_data(target_n, utdates):
             frames  = list(zip(_frames[::2], _frames[1::2]))
 
             for kk, ff in zip(ids, frames):
-                for b in ['H', 'K']:
-                    # copy to AB folder
-                    # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
-                    # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
-                    # copy to A or B folder
-                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
-                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+                    for b in ['H', 'K']:
+                        # copy to AB folder
+                        # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+                        # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+                        # copy to A or B folder
+                        copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
 
-                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
-                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                        copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
                 # out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
 
 #-------- STD ------------------------------------------
@@ -190,17 +190,22 @@ def move_data(target_n, utdates):
             ids     = list(zip(_ids[::2], _ids[1::2]))
             frames  = list(zip(_frames[::2], _frames[1::2]))
 
-            for kk, ff in zip(ids, frames):
-                for b in ['H', 'K']:
-                    # copy to AB folder
-                    # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
-                    # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
-                    # copy to A or B folder
-                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
-                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+            # only copy one set of A B, the first A and B (cause ABBA's A combinded spec called with first A's ID)
+            kk = ids[0]
+            ff = frames[0]
 
-                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
-                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+            # for kk, ff in zip(ids, frames):
+            #     if kk[0] in _ids: # check only copy one set of A B
+            for b in ['H', 'K']:
+            # copy to AB folder
+            # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+            # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+            # copy to A or B folder
+                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+
+                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
 
 
 
@@ -275,14 +280,18 @@ def move_data_split(target_n, utdates):
             ids     = list(zip(_ids[::2], _ids[1::2]))
             frames  = list(zip(_frames[::2], _frames[1::2]))
 
-            for kk, ff in zip(ids, frames):
-                for b in ['H', 'K']:
+            # only copy one set of A B, the first A and B (cause ABBA's A combinded spec called with first A's ID)
+            kk = ids[0]
+            ff = frames[0]
+
+            # for kk, ff in zip(ids, frames):
+            for b in ['H', 'K']:
                     # copy to AB folder
                     # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copy to A or B folder
-                    copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
-                    copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
 
-                    copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
-                    copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
