@@ -2,6 +2,7 @@ import funcitons.make_AB_recipe as make_AB_recipe
 import sys, os, argparse
 import numpy as np
 from astropy.table import Table
+from astropy.io import fits
 
 
 
