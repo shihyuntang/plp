@@ -48,10 +48,20 @@ def make_sh(target_n, target_have, cpu_use):
     print('Making .sh file')
     utdates = np.sort(target_have)
 
-    delta = len(target_have) // cpu_use
-    remain= cpu_use % delta
-    for i in range(cpu_use):
-        if i != cpu_use-1:
-            making(target_n, utdates[i*delta:(i+1)*delta], i+1)
-        elif i == cpu_use-1:
-            making(target_n, utdates[i*delta:], i+1)
+    if len(target_have)>= cpu_use:
+        delta = len(target_have) // cpu_use
+        remain= cpu_use % delta
+        for i in range(cpu_use):
+            if i != cpu_use-1:
+                making(target_n, utdates[i*delta:(i+1)*delta], i+1)
+            elif i == cpu_use-1:
+                making(target_n, utdates[i*delta:], i+1)
+    else:
+        cpu_use = len(target_have)
+        delta = len(target_have) // cpu_use
+        remain = 0
+        for i in range(cpu_use):
+            if i != cpu_use-1:
+                making(target_n, utdates[i*delta:(i+1)*delta], i+1)
+            elif i == cpu_use-1:
+                making(target_n, utdates[i*delta:], i+1)
