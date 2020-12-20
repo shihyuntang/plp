@@ -122,7 +122,7 @@ def mkdir(dirpath):
         os.makedirs(dirpath)
 
 
-def move_data(target_n, utdates):
+def move_data(target_n, utdates, args):
     # plp outdata dir AB
     # in_spec_fh  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.spec.fits'
     # in_sn_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.sn.fits'
@@ -130,13 +130,17 @@ def move_data(target_n, utdates):
     in_spec_fhab  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.spec.fits'
     in_sn_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.sn.fits'
 
+    if args.mode.lower()=='optimal':
+        Nextend = ''
+    elif args.mode.lower() == 'simple':
+        Nextend = '_simple'
     # final spec store dir for TAR
-    out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_tar   = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_spec_fh_tar = './final_A_B_spec/{:s}{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_tar   = './final_A_B_spec/{:s}{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
     # final spec store dir for STD
-    out_spec_fh_std = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_std   = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_spec_fh_std = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
     # new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
     temp_recipe_fh      = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
@@ -152,13 +156,15 @@ def move_data(target_n, utdates):
 
         # make final spec store dir TAR
         # mkdir("./final_A_B_spec/{:s}/{:d}/AB/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{:s}/{:d}/A/".format( target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{:s}/{:d}/B/".format( target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}{:s}/{:d}/A/".format( target_n.replace(' ', ''), Nextend, ut))
+        mkdir("./final_A_B_spec/{:s}{:s}/{:d}/B/".format( target_n.replace(' ', ''), Nextend, ut))
 
         # make final spec store dir STD
         # mkdir("./final_A_B_spec/{:s}/std/{:d}/AB/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/AB/".format( target_n.replace(' ', ''), Nextend, ut))
+
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), Nextend, ut))
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), Nextend, ut))
 
         # base on the info. in .recipes file to move each spec to the right A or B folder
 #-------- science target--------------------------------
@@ -175,11 +181,11 @@ def move_data(target_n, utdates):
                         # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
                         # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
                         # copy to A or B folder
-                        copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
-                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+                        copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
+                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
 
-                        copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
-                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                        copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
+                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
                 # out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
 
 #-------- STD ------------------------------------------
@@ -201,17 +207,20 @@ def move_data(target_n, utdates):
             # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
             # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
             # copy to A or B folder
-                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
-                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[0], b, ut, kk[0]))
+                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
+                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], 'AB'),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
 
-                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
-                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, ff[1], b, ut, kk[1]))
+                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
+                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
+
+                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
+                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
 
 
 
 ######################
 
-def move_data_split(target_n, utdates):
+def move_data_split(target_n, utdates, args):
     # plp outdata dir AB
     # in_spec_fh  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.spec.fits'
     # in_sn_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.sn.fits'
@@ -219,13 +228,17 @@ def move_data_split(target_n, utdates):
     in_spec_fhab  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.spec.fits'
     in_sn_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.sn.fits'
 
+    if args.mode.lower()=='optimal':
+        Nextend = ''
+    elif args.mode.lower() == 'simple':
+        Nextend = '_simple'
     # final spec store dir for TAR
-    out_spec_fh_tar = './final_A_B_spec/{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_tar   = './final_A_B_spec/{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_spec_fh_tar = './final_A_B_spec/{:s}{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_tar   = './final_A_B_spec/{:s}{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
     # final spec store dir for STD
-    out_spec_fh_std = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_std   = './final_A_B_spec/{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_spec_fh_std = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_sn_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
 
     # new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
     temp_recipe_fh      = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
@@ -241,13 +254,15 @@ def move_data_split(target_n, utdates):
 
         # make final spec store dir TAR
         # mkdir("./final_A_B_spec/{:s}/{:s}/AB/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{:s}/{:s}/A/".format( target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{:s}/{:s}/B/".format( target_n.replace(' ', ''), ut))
+        mkdir("./final_A_B_spec/{:s}{:s}/{:s}/A/".format( target_n.replace(' ', ''), Nextend, ut))
+        mkdir("./final_A_B_spec/{:s}{:s}/{:s}/B/".format( target_n.replace(' ', ''), Nextend, ut))
 
         # make final spec store dir STD
         # mkdir("./final_A_B_spec/{:s}/std/{:d}/AB/".format(target_n.replace(' ', ''), int(ut[:8]) ))
-        mkdir("./final_A_B_spec/{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), int(ut[:8]) ))
-        mkdir("./final_A_B_spec/{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), int(ut[:8]) ))
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/AB/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
+
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
 
         # base on the info. in .recipes file to move each spec to the right A or B folder
 #-------- science target--------------------------------
@@ -265,11 +280,11 @@ def move_data_split(target_n, utdates):
                         # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), kk[0]))
                         # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_tar.format(  target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), kk[0]))
                         # copy to A or B folder
-                        copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[0], b, int(ut[:8]), kk[0]))
-                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]),  out_sn_fh_tar.format(  target_n.replace(' ',''), ut, ff[0], b, int(ut[:8]), kk[0]))
+                        copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, int(ut[:8]), kk[0]))
+                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_tar.format(  target_n.replace(' ',''), Nextend, ut, ff[0], b, int(ut[:8]), kk[0]))
 
-                        copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, ff[1], b, int(ut[:8]), kk[1]))
-                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_tar.format(  target_n.replace(' ',''), ut, ff[1], b, int(ut[:8]), kk[1]))
+                        copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, int(ut[:8]), kk[1]))
+                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_tar.format(  target_n.replace(' ',''), Nextend, ut, ff[1], b, int(ut[:8]), kk[1]))
                 # out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
 
 #-------- STD ------------------------------------------
@@ -290,8 +305,11 @@ def move_data_split(target_n, utdates):
                     # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copy to A or B folder
-                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
-                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
 
-                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
-                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+
+                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))

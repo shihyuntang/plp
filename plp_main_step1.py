@@ -19,6 +19,9 @@ if __name__ == "__main__":
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name, should be the same as in the recipe", type=str)
+    parser.add_argument('-mode',       dest="mode",         action="store",
+                        help="plp extraction-mode, optimal OR simple. The default is optimal",
+                        type=str,   default='optimal' )
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Numbers of run_bash gnerate, i.e., numbers of cpu (threads) to use, default is 1",
                         type=int,   default=int(1) )
@@ -51,7 +54,7 @@ if __name__ == "__main__":
     target_have = make_AB_recipe.make_AB_recipe(args.targname, target_have)
 
     # Make .sh file and run IGRINS ---------------------------------------------
-    run_IGRINS.make_sh(args.targname, target_have, args.Nthreads)
+    run_IGRINS.make_sh(args.targname, target_have, args.Nthreads, args)
     # run igrins...
     print('Step 2 Ended, please run --> bash {0:s}_run_igrins.sh manually'.format(args.targname.replace(' ','')))
     #os.popen('bash {0:s}_run_igrins.sh'.format(args.targname.replace(' ','')))

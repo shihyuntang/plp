@@ -7,7 +7,6 @@ from astropy.io import fits
 
 
 
-
 if __name__ == "__main__":
     print('Step 2...')
 
@@ -19,6 +18,12 @@ if __name__ == "__main__":
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name, should be the same as in the recipe", type=str)
+    parser.add_argument('-mode',       dest="mode",         action="store",
+                        help="plp extraction-mode, optimal OR simple. The default is optimal",
+                        type=str,   default='optimal' )
+    parser.add_argument('-c',       dest="Nthreads",         action="store",
+                        help="Numbers of run_bash gnerate, i.e., numbers of cpu (threads) to use, default is 1",
+                        type=int,   default=int(1) )
 
     args = parser.parse_args()
     indata_dir = './indata/'
@@ -41,7 +46,7 @@ if __name__ == "__main__":
     print('-------------------------------------')
     print('process dates:\n', tenn)
 
-    make_AB_recipe.move_data_split(args.targname, target_have)
+    make_AB_recipe.move_data_split(args.targname, target_have, args)
 
 
     print('-------------------------------------')
@@ -49,7 +54,13 @@ if __name__ == "__main__":
     #---- correcting the fits header
     target = args.targname.replace(' ','')
 
-    end_dir   = f'./final_A_B_spec/{target}/'
+
+    if args.mode.lower()=='optimal':
+        Nextend = ''
+    elif args.mode.lower() == 'simple':
+        Nextend = '_simple'
+
+    end_dir   = f'./final_A_B_spec/{target}{Nextend}/'
     end_dates = [i for i in os.listdir(end_dir) if i[:2]=='20']
 
     # items in header need to be copied
@@ -65,14 +76,14 @@ if __name__ == "__main__":
 
     for dd in end_dates:
         for nod in ['A', 'B']:
-            AB_subdir = f'./final_A_B_spec/{target}/{dd}/{nod}/'
+            AB_subdir = f'./final_A_B_spec/{target}{Nextend}/{dd}/{nod}/'
             AB_subs = [i for i in os.listdir(AB_subdir) if i[:2]=='SD']
 
             for subAB in AB_subs:
                 band = subAB[3]
                 tag  = subAB[14:18]
 
-                h_end = fits.open(f'./final_A_B_spec/{target}/{dd}/{nod}/{subAB}')
+                h_end = fits.open(f'./final_A_B_spec/{target}{Nextend}/{dd}/{nod}/{subAB}')
                 end_keys = list(h_end[0].header.keys())
 
                 h_raw = fits.open(f'./indata/{dd[:8]}/SDC{band}_{dd[:8]}_{tag}.fits')
@@ -93,4 +104,4 @@ if __name__ == "__main__":
                     if kk in raw_keys:
                         h_end[0].header[kk] = h_raw[0].header[kk]
 
-                h_end.writeto(f'./final_A_B_spec/{target}/{dd}/{nod}/{subAB}', overwrite=True)
+                h_end.writeto(f'./final_A_B_spec/{target}{Nextend}/{dd}/{nod}/{subAB}', overwrite=True)

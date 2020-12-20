@@ -37,14 +37,14 @@ def check_obs_dates(target_n, indata_dir, master=log_master):
 
 
 
-def make_recipe(target_n, target_have, master=log_master):
+def make_recipe(target_n, target_have, out_dir, master=log_master):
 
     no_flat = [] ; no_sky = [] ; no_std  = []
     target_Date = []
     target_ID   = []
     A0_ID       = []
 
-    p = os.getcwd() + '/recipes/' + target_n.replace(' ','') + '_recipes'
+    p = out_dir
     pp = Path(p)
     if pp.exists() == 0:
         os.mkdir( pp )

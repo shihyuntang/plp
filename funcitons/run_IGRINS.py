@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import re
 
-def making(target_n, utdates, tim):
+def making(target_n, utdates, tim, args):
     with open('./run_sh/{:s}_run_igrins{}.sh'.format(target_n.replace(' ',''), tim), 'w') as fh:
         fh.write("#!/usr/bin/env bash\n")
         fh.write("cd ../\n")
@@ -27,10 +27,18 @@ def making(target_n, utdates, tim):
         fh.write('      fi\n')
         fh.write('  done\n')
         fh.write('\n')
-        fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_A" --frac-slit="0,0.5"\n')
-        fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_B" --frac-slit="0.5,1"\n')
-        fh.write('  python igr_pipe.py stellar-ab $UTDATE --basename-postfix="_A" --frac-slit="0,0.5"\n')
-        fh.write('  python igr_pipe.py stellar-ab $UTDATE --basename-postfix="_B" --frac-slit="0.5,1"\n')
+        if args.mode.lower() == 'optimal':
+            fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_A" --frac-slit="0,0.5"\n')
+            fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_B" --frac-slit="0.5,1"\n')
+            fh.write('  python igr_pipe.py stellar-ab $UTDATE --basename-postfix="_A" --frac-slit="0,0.5"\n')
+            fh.write('  python igr_pipe.py stellar-ab $UTDATE --basename-postfix="_B" --frac-slit="0.5,1"\n')
+        elif args.mode.lower() == 'simple':
+            fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_AB" --extraction-mode=simple\n')
+
+            fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_A" --frac-slit="0,0.5" --extraction-mode=simple\n')
+            fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_B" --frac-slit="0.5,1" --extraction-mode=simple\n')
+            fh.write('  python igr_pipe.py stellar-ab $UTDATE --basename-postfix="_A" --frac-slit="0,0.5" --extraction-mode=simple\n')
+            fh.write('  python igr_pipe.py stellar-ab $UTDATE --basename-postfix="_B" --frac-slit="0.5,1" --extraction-mode=simple\n')
         fh.write('\n')
         fh.write('  if [ $rc != "0" ]\n')
         fh.write('  then\n')
@@ -43,7 +51,7 @@ def making(target_n, utdates, tim):
         fh.write("conda deactivate\n")
 
 #pwd = os.getcwd()
-def make_sh(target_n, target_have, cpu_use):
+def make_sh(target_n, target_have, cpu_use, args):
     print('-------------------------------------')
     print('Making .sh file')
     utdates = np.sort(target_have)
@@ -53,15 +61,15 @@ def make_sh(target_n, target_have, cpu_use):
         remain= cpu_use % delta
         for i in range(cpu_use):
             if i != cpu_use-1:
-                making(target_n, utdates[i*delta:(i+1)*delta], i+1)
+                making(target_n, utdates[i*delta:(i+1)*delta], i+1, args)
             elif i == cpu_use-1:
-                making(target_n, utdates[i*delta:], i+1)
+                making(target_n, utdates[i*delta:], i+1, args)
     else:
         cpu_use = len(target_have)
         delta = len(target_have) // cpu_use
         remain = 0
         for i in range(cpu_use):
             if i != cpu_use-1:
-                making(target_n, utdates[i*delta:(i+1)*delta], i+1)
+                making(target_n, utdates[i*delta:(i+1)*delta], i+1, args)
             elif i == cpu_use-1:
-                making(target_n, utdates[i*delta:], i+1)
+                making(target_n, utdates[i*delta:], i+1, args)
