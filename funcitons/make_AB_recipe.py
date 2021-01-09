@@ -161,7 +161,8 @@ def move_data(target_n, utdates, args):
 
         # make final spec store dir STD
         # mkdir("./final_A_B_spec/{:s}/std/{:d}/AB/".format(target_n.replace(' ', ''), ut))
-        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/AB/".format( target_n.replace(' ', ''), Nextend, ut))
+        if args.mode.lower() == 'simple':
+            mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/AB/".format( target_n.replace(' ', ''), Nextend, ut))
 
         mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), Nextend, ut))
         mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), Nextend, ut))
@@ -207,8 +208,9 @@ def move_data(target_n, utdates, args):
             # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
             # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
             # copy to A or B folder
-                copyfile(in_spec_fhab.format(ut, b, ut, kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
-                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], 'AB'),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
+                if args.mode.lower() == 'simple':
+                    copyfile(in_spec_fhab.format(ut, b, ut, kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
+                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], 'AB'),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
 
                 copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
                 copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
@@ -259,7 +261,8 @@ def move_data_split(target_n, utdates, args):
 
         # make final spec store dir STD
         # mkdir("./final_A_B_spec/{:s}/std/{:d}/AB/".format(target_n.replace(' ', ''), int(ut[:8]) ))
-        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/AB/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
+        if args.mode.lower() == 'simple':
+            mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/AB/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
 
         mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
         mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
@@ -305,8 +308,9 @@ def move_data_split(target_n, utdates, args):
                     # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copy to A or B folder
-                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
-                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                if args.mode.lower() == 'simple':
+                    copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                    copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
 
                 copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
                 copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
