@@ -62,6 +62,11 @@ if __name__ == "__main__":
                 'HASTART','ZDSTART','HAEND','ZDEND','AIRTEMP','BARPRESS','DEWPOINT','DOMETEMP','HUMIDITY','GAIN','RDNOISE','TEMP_2','TEMP_GR','VACUUM','PIXSCALE',
                 'BAND','FILTER','JD-OBS','JD-END']
 
+    GeminiS_list = [ 'OBSERVAT', 'TELESCOP', 'INSTRUME', 'DETECTOR', 'TIMESYS', 'OBSERVER', 'OBJECT', 'PROGID', 'GEMPRID', 'EXPTIME', 'TEMP-DET', 'TEMP-GRA', 'BAND', 'OBJTYPE',
+                     'FRMTYPE', 'UTDATE', 'DATE-OBS', 'DATE-END', 'UT-OBS', 'UT-END', 'JD-OBS', 'JD-END', 'MJD-OBS', 'TELPA', 'RADECSYS', 'TELRA', 'TELDEC', 'TELEPOCH',
+                     'OBJRA', 'OBJDEC', 'OBJEPOCH', 'USERRA', 'USERDEC', 'USEREPOC', 'FOCUSVAL', 'AUTOGUID', 'AMSTART', 'AMEND', 'HASTART', 'HAEND', 'LSTSTART', 'LSTEND',
+                     'ZDSTART', 'ZDEND', 'PASTART', 'PAEND', 'BARPRESS', 'AIRTEMP', 'HUMIDITY', 'DEWPOINT', 'GAIN', 'NSAMP', 'RDNOISE']
+
     for dd in end_dates:
         for nod in ['A', 'B']:
             AB_subdir = f'./final_A_B_spec/{target}{Nextend}/{dd}/{nod}/'
@@ -84,8 +89,12 @@ if __name__ == "__main__":
                 elif (h_end[0].header['OBSERVAT'].lower() == 'mcdonald observatory') or (h_end[0].header['OBSERVAT'].lower()  == 'mcdonald'):
                     replace_list = McD_list
 
+                elif (h_end[0].header['OBSERVAT'].lower() == 'gemini observatory'):
+                    if (h_end[0].header['TELESCOP'].lower() == 'gemini south'):
+                        replace_list = GeminiS_list
+
                 else:
-                    print(f'Oops, cannot deal with {h_end[0].header["OBSERVAT"].lower()}')
+                    sys.exit(f'Oops, cannot deal with {h_end[0].header["OBSERVAT"].lower()}')
                 #-------------------------------------------------------------
 
                 for kk in replace_list:
@@ -93,3 +102,6 @@ if __name__ == "__main__":
                         h_end[0].header[kk] = h_raw[0].header[kk]
 
                 h_end.writeto(f'./final_A_B_spec/{target}{Nextend}/{dd}/{nod}/{subAB}', overwrite=True)
+    print('\n')
+    print('Step 2 Ended. You are now ready for running IGRINS RV')
+    print('Please copy the reduced 1D spectra target folder under "./final_A_B_spec" to the "input" folder in the "igrins_rv-master"')
