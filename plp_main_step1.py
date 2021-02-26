@@ -1,5 +1,5 @@
-import funcitons.make_AB_recipe as make_AB_recipe
-import funcitons.run_IGRINS as run_IGRINS
+import functions.make_AB_recipe as make_AB_recipe
+import functions.run_IGRINS as run_IGRINS
 import sys, os, argparse
 import numpy as np
 
