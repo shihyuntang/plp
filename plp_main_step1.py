@@ -56,5 +56,5 @@ if __name__ == "__main__":
     # Make .sh file and run IGRINS ---------------------------------------------
     run_IGRINS.make_sh(args.targname, target_have, args.Nthreads, args)
     # run igrins...
-    print('Step 2 Ended, please run --> bash {0:s}_run_igrins.sh manually'.format(args.targname.replace(' ','')))
+    print('Step 2 Ended, please run --> bash ./run_sh/{0:s}_run_igrinsX.sh manually'.format(args.targname.replace(' ','')))
     #os.popen('bash {0:s}_run_igrins.sh'.format(args.targname.replace(' ','')))
