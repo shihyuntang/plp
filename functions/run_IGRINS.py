@@ -7,6 +7,7 @@ def making(target_n, utdates, tim, args):
     with open('./run_sh/{:s}_run_igrins{}.sh'.format(target_n.replace(' ',''), tim), 'w') as fh:
         fh.write("#!/usr/bin/env bash\n")
         fh.write("cd ../\n")
+        fh.write("conda init\n")
         fh.write("conda activate igrins-plp-env\n")
 
         fh.write("for UTDATE in")
