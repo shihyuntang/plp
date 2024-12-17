@@ -1,0 +1,14 @@
+name: igrins-plp-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - matplotlib
+  - numpy
+  - pandas
+  - scipy
+  - astropy
+  - pip
+  - simplejson
+  - astroscrappy
