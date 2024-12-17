@@ -2,3 +2,10 @@
 *#
 html_*
 .DS_Store
+
+calib/
+final_A_B_spec/
+outdata/
+recipe_logs/
+run_sh/
+
