@@ -1,9 +1,10 @@
+from __future__ import print_function
 import os
-from json_helper import json_dump
+from .json_helper import json_dump
 import json
 import numpy as np
 
-from load_fits import get_first_science_hdu, open_fits
+from .load_fits import get_first_science_hdu, open_fits
 
 #from astropy.io.fits import Card
 import astropy.io.fits as pyfits
@@ -68,8 +69,7 @@ class PipelineImageBase(object):
         hdu_rest = [get_image_hdu(d_) for d_ in d_list2[1:]]
 
         hdu = pyfits.HDUList([hdu0] + hdu_rest)
-        from itertools import izip
-        for hdu1, (h, d) in izip(hdu, self.iter_header_data()):
+        for hdu1, (h, d) in zip(hdu, self.iter_header_data()):
             hdu1.header.extend(h)
 
         #fn0 = "".join([fn, ".fits"])
@@ -112,10 +112,10 @@ class PipelineStorage(object):
 
     @classmethod
     def from_utdate(cls, utdate, config=None):
-        from path_info import IGRINSPath
+        from .path_info import IGRINSPath
 
         if config is None:
-            from igrins_config import IGRINSConfig
+            from .igrins_config import IGRINSConfig
             config = IGRINSConfig()
 
         igr_path = IGRINSPath(config, utdate)
@@ -153,10 +153,10 @@ class PipelineStorage(object):
             fn = self.igr_path.get_section_filename_base(section, fn0)
 
             if fn in self._cache:
-                print "loading (cached)", fn
+                print("loading (cached)", fn)
                 r[(section, prefix, ext)] = self._cache[fn]
             else:
-                print "loading", fn
+                print("loading", fn)
                 v = self.load_one(fn)
                 r[(section, prefix, ext)] = v
                 self._cache[fn] = v
@@ -207,11 +207,11 @@ class PipelineStorage(object):
             v = None
 
         if v is None:
-            print "loading", fn
+            print("loading", fn)
             v = self.load_one(fn)
             self._cache[fn] = v
         else:
-            print "loading (cached)", fn
+            print("loading (cached)", fn)
 
         return v
 
@@ -220,10 +220,10 @@ class PipelineStorage(object):
         fn = self.get_item_path(product_desc, mastername)
 
         if fn in self._cache:
-            print "loading (cached)", fn
+            print("loading (cached)", fn)
             v = self._cache[fn]
         else:
-            print "loading", fn
+            print("loading", fn)
             v = self.load_one(fn)
             self._cache[fn] = v
 
@@ -241,7 +241,7 @@ class PipelineStorage(object):
 
         fn = self.get_item_path(product_desc, mastername,
                                 prevent_split=prevent_split)
-        print "saving %s" % fn
+        print("saving %s" % fn)
 
         item.store(fn)
 
@@ -271,7 +271,7 @@ class PipelineStorage(object):
             fn0 = prefix + os.path.basename(mastername) + ext
             fn = self.igr_path.get_section_filename_base(section, fn0)
 
-            print "store", fn
+            print("store", fn)
             if cache:
                 self._cache[fn] = v
             self.save_one(fn, v, masterhdu=masterhdu)

@@ -1,5 +1,5 @@
 import numpy as np
-from reidentify import reidentify_lines_all2
+from .reidentify import reidentify_lines_all2
 
 
 def match_orders(orders, s_list_src, s_list_dst):
@@ -31,7 +31,12 @@ def match_orders(orders, s_list_src, s_list_dst):
         s_list_dst_clip = [np.clip(s, -0.1*s_std, s_std)/s_std for (s, s_std) \
                            in zip(s_list_dst_filtered, std_list)]
         cor_list = [correlate(center_s_clip, s, mode="same") for s in s_list_dst_clip]
-        cor_max_list = [np.nanmax(cor) for cor in cor_list]
+
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')
+
+            cor_max_list = [np.nanmax(cor) for cor in cor_list]
 
         center_indx_dst = np.nanargmax(cor_max_list)
 
@@ -39,7 +44,7 @@ def match_orders(orders, s_list_src, s_list_dst):
         delta_indx_list.append(delta_indx)
 
     #print cor_max_list, delta_indx
-    print "index diferences : ", delta_indx_list
+    # print "index diferences : ", delta_indx_list
     delta_indx = sorted(delta_indx_list)[dstep]
     center_indx_dst0 = center_indx0 + delta_indx
 
@@ -62,7 +67,7 @@ def get_offset_transform(thar_spec_src, thar_spec_dst):
         offsets.append(offset)
 
     #from skimage.measure import ransac, LineModel
-    from skimage_measure_fit import ransac, LineModel
+    from .skimage_measure_fit import ransac, LineModel
 
     xi = np.arange(len(offsets))
     data = np.array([xi, offsets]).T
@@ -78,7 +83,7 @@ def get_offset_transform(thar_spec_src, thar_spec_dst):
         ym = int(model_robust.predict_y(i))
         x1 = int(max(0, (center - ym) - 20))
         x2 = int(min((center - ym) + 20 + 1, 2048))
-        print i, x1, x2
+        # print i, x1, x2
         ym2 = center - (np.argmax(cor_list[i][x1:x2]) + x1)
         #print ym2
         offsets2[i] = ym2
