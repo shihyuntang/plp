@@ -38,6 +38,9 @@ if __name__ == "__main__":
     if not os.path.isdir('./recipes'):
         os.mkdir('./recipes')
 
+    if not os.path.isdir('./recipe_logs'):
+        os.mkdir('./recipe_logs')
+
     # Making Recipes -----------------------------------------------------------
 
     new_tar_list = os.listdir('./recipes/{}_recipes'.format(args.targname.replace(' ','')))
