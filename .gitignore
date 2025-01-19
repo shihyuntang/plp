@@ -2,10 +2,16 @@
 *#
 html_*
 .DS_Store
+xmatch_log.csv
 
 calib/
 final_A_B_spec/
 outdata/
 recipe_logs/
+recipes/
 run_sh/
+recipe_logs_bkg/
+indata/*
+indata/20170216/
+
 

@@ -7,8 +7,9 @@ def making(target_n, utdates, tim, args):
     with open('./run_sh/{:s}_run_igrins{}.sh'.format(target_n.replace(' ',''), tim), 'w') as fh:
         fh.write("#!/usr/bin/env bash\n")
         fh.write("cd ../\n")
-        fh.write("conda activate base\n")
-        fh.write("conda activate igrins-plp-env\n")
+        # DON'T USE as is for interactive shell
+        # fh.write("conda activate base\n")
+        # fh.write("conda activate igrins-plp-env\n")
 
         fh.write("for UTDATE in")
         for ut in utdates:
@@ -20,7 +21,7 @@ def making(target_n, utdates, tim, args):
         #fh.write('  for RECIPE in flat register-sky sky-wvlsol a0v-ab a0v-onoff stellar-ab extended-ab extended-onoff stellar-onoff tell-wvsol\n')
         fh.write('  for RECIPE in flat register-sky flexure-setup wvlsol-sky\n')
         fh.write('  do\n')
-        fh.write('      python igr_pipe.py $RECIPE $UTDATE \n')
+        fh.write('      conda run -n igrins-plp-env --live-stream python igr_pipe.py $RECIPE $UTDATE \n')
         fh.write('      rc=$?\n')
         fh.write('      if [ $rc != "0" ]\n')
         fh.write('      then\n')
@@ -29,17 +30,17 @@ def making(target_n, utdates, tim, args):
         fh.write('  done\n')
         fh.write('\n')
         if args.mode.lower() == 'optimal':
-            fh.write('  python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5"\n')
-            fh.write('  python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1"\n')
-            fh.write('  python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5"\n')
-            fh.write('  python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1"\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5"\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1"\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5"\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1"\n')
         elif args.mode.lower() == 'simple':
-            fh.write('  python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_AB" --extraction-mode=simple\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py a0v-ab $UTDATE --basename-postfix="_AB" --extraction-mode=simple\n')
 
-            fh.write('  python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5" --extraction-mode=simple\n')
-            fh.write('  python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1" --extraction-mode=simple\n')
-            fh.write('  python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5" --extraction-mode=simple\n')
-            fh.write('  python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1" --extraction-mode=simple\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5" --extraction-mode=simple\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py a0v-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1" --extraction-mode=simple\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_A" --frac-slit="0,0.5" --extraction-mode=simple\n')
+            fh.write('  conda run -n igrins-plp-env --live-stream python igr_pipe.py stellar-ab $UTDATE --correct-flexure --mask-cosmics --basename-postfix="_B" --frac-slit="0.5,1" --extraction-mode=simple\n')
         fh.write('\n')
         fh.write('  if [ $rc != "0" ]\n')
         fh.write('  then\n')
@@ -49,7 +50,7 @@ def making(target_n, utdates, tim, args):
         fh.write('\n')
         fh.write("echo IGRINS Pipeline Finished\n")
 
-        fh.write("conda deactivate\n")
+        # fh.write("conda deactivate\n")
 
 #pwd = os.getcwd()
 def make_sh(target_n, target_have, cpu_use, args):

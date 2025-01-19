@@ -125,10 +125,11 @@ def mkdir(dirpath):
 def move_data(target_n, utdates, args):
     # plp outdata dir AB
     # in_spec_fh  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    # in_sn_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    # in_variance_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.variance.fits'
     # plp outdata dir A/B
+    # plp v2.2, we use .spec and .variance files, but from v3.0, we use .spec and .variance files.
     in_spec_fhab  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.spec.fits'
-    in_sn_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.sn.fits'
+    in_variance_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.variance.fits'
 
     if args.mode.lower()=='optimal':
         Nextend = ''
@@ -136,11 +137,11 @@ def move_data(target_n, utdates, args):
         Nextend = '_simple'
     # final spec store dir for TAR
     out_spec_fh_tar = './final_A_B_spec/{:s}{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_tar   = './final_A_B_spec/{:s}{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_variance_fh_tar   = './final_A_B_spec/{:s}{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.variance.fits'
 
     # final spec store dir for STD
     out_spec_fh_std = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_variance_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.variance.fits'
 
     # new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
     temp_recipe_fh      = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
@@ -180,13 +181,13 @@ def move_data(target_n, utdates, args):
                     for b in ['H', 'K']:
                         # copy to AB folder
                         # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
-                        # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+                        # copyfile(in_variance_fh.format(ut, b, ut, kk[0]),   out_variance_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
                         # copy to A or B folder
                         copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
-                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
+                        copyfile(in_variance_fhab.format(ut, b, ut, kk[0], ff[0]),   out_variance_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
 
                         copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
-                        copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
+                        copyfile(in_variance_fhab.format(ut, b, ut, kk[0], ff[1]),   out_variance_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
                 # out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
 
 #-------- STD ------------------------------------------
@@ -206,18 +207,38 @@ def move_data(target_n, utdates, args):
             for b in ['H', 'K']:
             # copy to AB folder
             # copyfile(in_spec_fh.format(ut, b, ut, kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
-            # copyfile(in_sn_fh.format(ut, b, ut, kk[0]),   out_sn_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
+            # copyfile(in_variance_fh.format(ut, b, ut, kk[0]),   out_variance_fh_std.format(target_n.replace(' ',''), ut, 'AB', b, ut, kk[0]))
             # copy to A or B folder
                 if args.mode.lower() == 'simple':
                     copyfile(in_spec_fhab.format(ut, b, ut, kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
-                    copyfile(in_sn_fhab.format(ut, b, ut, kk[0], 'AB'),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
+                    copyfile(in_variance_fhab.format(ut, b, ut, kk[0], 'AB'),   out_variance_fh_std.format(target_n.replace(' ',''), Nextend, ut, 'AB', b, ut, kk[0]))
 
                 copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
-                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[0]),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
+                copyfile(in_variance_fhab.format(ut, b, ut, kk[0], ff[0]),   out_variance_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, ut, kk[0]))
 
                 copyfile(in_spec_fhab.format(ut, b, ut, kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
-                copyfile(in_sn_fhab.format(ut, b, ut, kk[0], ff[1]),   out_sn_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
+                copyfile(in_variance_fhab.format(ut, b, ut, kk[0], ff[1]),   out_variance_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, ut, kk[1]))
 
+# ------- plp v3.0 save large debug files, remove them to save space -------
+    for jj, ut in enumerate(utdates):
+
+        _files = os.listdir(f'./outdata/{ut}/')
+
+        # only keep the .spec, .variance, .sn files, and also those ended 
+        # with .json, .csv, and .db files
+        rm_files = [
+            x for x in _files if not x.endswith('.spec.fits') 
+            and not x.endswith('.variance.fits') 
+            # and not x.endswith('.sn.fits') 
+            and not x.endswith('.json') 
+            and not x.endswith('.csv') 
+            and not x.endswith('.db')
+            and x != 'qa'
+        ]
+
+        if len(rm_files) > 0:
+            # print('\n Clearing dir ./outdata/ ...')
+            for f in rm_files: os.remove(f'./outdata/{ut}/{f}')
 
 
 ######################
@@ -225,10 +246,10 @@ def move_data(target_n, utdates, args):
 def move_data_split(target_n, utdates, args):
     # plp outdata dir AB
     # in_spec_fh  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    # in_sn_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    # in_variance_fh    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}.variance.fits'
     # plp outdata dir A/B
     in_spec_fhab  = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.spec.fits'
-    in_sn_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.sn.fits'
+    in_variance_fhab    = pwd + '/outdata/{:d}/SDC{:s}_{:d}_{:04d}_{:s}.variance.fits'
 
     if args.mode.lower()=='optimal':
         Nextend = ''
@@ -236,11 +257,11 @@ def move_data_split(target_n, utdates, args):
         Nextend = '_simple'
     # final spec store dir for TAR
     out_spec_fh_tar = './final_A_B_spec/{:s}{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_tar   = './final_A_B_spec/{:s}{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_variance_fh_tar   = './final_A_B_spec/{:s}{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.variance.fits'
 
     # final spec store dir for STD
     out_spec_fh_std = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_sn_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.sn.fits'
+    out_variance_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.variance.fits'
 
     # new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
     temp_recipe_fh      = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
@@ -281,13 +302,13 @@ def move_data_split(target_n, utdates, args):
                     for b in ['H', 'K']:
                         # copy to AB folder
                         # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_tar.format(target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), kk[0]))
-                        # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_tar.format(  target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), kk[0]))
+                        # copyfile(in_variance_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_variance_fh_tar.format(  target_n.replace(' ',''), ut, 'AB', b, int(ut[:8]), kk[0]))
                         # copy to A or B folder
                         copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, int(ut[:8]), kk[0]))
-                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_tar.format(  target_n.replace(' ',''), Nextend, ut, ff[0], b, int(ut[:8]), kk[0]))
+                        copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_variance_fh_tar.format(  target_n.replace(' ',''), Nextend, ut, ff[0], b, int(ut[:8]), kk[0]))
 
                         copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_tar.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, int(ut[:8]), kk[1]))
-                        copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_tar.format(  target_n.replace(' ',''), Nextend, ut, ff[1], b, int(ut[:8]), kk[1]))
+                        copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_variance_fh_tar.format(  target_n.replace(' ',''), Nextend, ut, ff[1], b, int(ut[:8]), kk[1]))
                 # out_spec_fh_tar = './final_A_B_spec/{:s}/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
 
 #-------- STD ------------------------------------------
@@ -306,14 +327,37 @@ def move_data_split(target_n, utdates, args):
             for b in ['H', 'K']:
                     # copy to AB folder
                     # copyfile(in_spec_fh.format(int(ut[:8]), b, int(ut[:8]), kk[0]), out_spec_fh_std.format(target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
-                    # copyfile(in_sn_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_sn_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                    # copyfile(in_variance_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_variance_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copy to A or B folder
                 if args.mode.lower() == 'simple':
                     copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
-                    copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                    copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
 
                 copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
-                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+                copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
 
                 copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
-                copyfile(in_sn_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_sn_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+                copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+
+# ------- plp v3.0 save large debug files, remove them to save space -------
+    for jj, ut in enumerate(utdates):
+
+        _files = os.listdir(f'./outdata/{ut}/')
+
+        # only keep the .spec, .variance, .sn files, and also those ended 
+        # with .json, .csv, and .db files
+        rm_files = [
+            x for x in _files if not x.endswith('.spec.fits') 
+            and not x.endswith('.variance.fits') 
+            # and not x.endswith('.sn.fits') 
+            and not x.endswith('.json') 
+            and not x.endswith('.csv') 
+            and not x.endswith('.db')
+        ]
+
+        if len(rm_files) > 0:
+            print('\n Clearing dir ./outdata/ ...')
+            for f in rm_files: os.remove(f'./outdata/{ut}/{f}')
+
+
+
