@@ -22,8 +22,8 @@ def make_AB_recipe(target_n, utdates):
     new_recipe_fh2   = pwd + '/recipe_logs/{0:8d}.recipes'
 
     # new printout in the recipes
-    a0std_str  = '{:s}, STD, {:d}, 1, {:f}, A0V_AB, {:02d} {:02d}, {:s} {:s}\n'
-    target_str = '{:s}, TAR, {:d}, 1, {:f}, STELLAR_AB, {:02d} {:02d}, {:s} {:s}\n'
+    # a0std_str  = '{:s}, STD, {:d}, 1, {:f}, A0V_AB, {:02d} {:02d}, {:s} {:s}\n'
+    target_str = '{:s}, TAR, {:d}, 1, {:f}, STELLAR_AB, {:02d} {:02d}, {:s} {:s} \n'
 
     print('-------------------------------------')
     print('Making A/B/AB recipes under plp read folder: ./recipe_log')
@@ -44,6 +44,11 @@ def make_AB_recipe(target_n, utdates):
         with open( recipe_fh.format(i) ) as oldfile, open( new_recipe_fh1.format(i), 'w') as newfile:
             for line in oldfile:
                 if not any(remove_row in line for remove_row in remove_rows):
+                    # check if ended with \n
+                    if '\n' not in line:
+                        line = line + '\n'
+                    if (line == "") or (line == "\n"):
+                        continue
                     newfile.write(line)
 
     # making A/B/AB recipe
