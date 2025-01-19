@@ -1,7 +1,6 @@
 import sys, os, argparse, shutil
 
 import numpy as np
-from astroquery.simbad import Simbad
 import pandas as pd
 
 import functions.make_AB_recipe as make_AB_recipe
