@@ -296,22 +296,24 @@ if __name__ == "__main__":
                 press = _h[0].header['BARPRESS']
                 night_box.append(dd)
                 tag_box.append(tag)
-                    
+                try:
+                    zd = (float(_h[0].header['ZDSTART']) + float(_h[0].header['ZDEND'])) / 2
+                except ValueError:
+                    zd = 'NOINFO'                   
 
                 facility_box.append(facility)
                 airmass_box.append(airmass)
+                zd_box.append(zd)
 
                 if facility != 'McD':
                     humid_box.append(rel_humidity)
                     temp_box.append(temp)    
                     press_box.append(press)
-                    zd = (float(_h[0].header['ZDSTART']) + float(_h[0].header['ZDEND'])) / 2
-                    zd_box.append(zd)    
                 else:
                     humid_box.append('NOINFO')
                     temp_box.append('NOINFO')    
                     press_box.append('NOINFO')
-                    zd_box.append('NOINFO')
+
                     
 
     A0_prepdata = Table(
