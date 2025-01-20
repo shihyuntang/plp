@@ -293,12 +293,16 @@ if __name__ == "__main__":
 
                 rel_humidity = _h[0].header['HUMIDITY']
                 temp = _h[0].header['AIRTEMP']
-                zd = (float(_h[0].header['ZDSTART']) + float(_h[0].header['ZDEND'])) / 2
                 press = _h[0].header['BARPRESS']
 
                 night_box.append(dd)
                 tag_box.append(tag)
-                zd_box.append(zd)
+                try:
+                    zd = (float(_h[0].header['ZDSTART']) + float(_h[0].header['ZDEND'])) / 2
+                    zd_box.append(zd)
+                except ValueError:
+                    zd_box.append('NOINFO')
+                    
                 facility_box.append(facility)
                 airmass_box.append(airmass)
 
