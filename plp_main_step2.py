@@ -304,7 +304,9 @@ if __name__ == "__main__":
                 if facility != 'McD':
                     humid_box.append(rel_humidity)
                     temp_box.append(temp)    
-                    press_box.append(press)    
+                    press_box.append(press)
+                    zd = (float(_h[0].header['ZDSTART']) + float(_h[0].header['ZDEND'])) / 2
+                    zd_box.append(zd)    
                 else:
                     humid_box.append('NOINFO')
                     temp_box.append('NOINFO')    
