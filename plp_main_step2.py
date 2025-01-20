@@ -230,7 +230,7 @@ if __name__ == "__main__":
                 i for i in os.listdir(AB_subdir) if i.startswith('SDCK') and i.endswith('.spec.fits')
                 ]
             # AB_subs.sort()
-            AB_subs = sorted(AB_subs, key=extract_sort_key)
+            # AB_subs = sorted(AB_subs, key=extract_sort_key)
 
             for subAB in AB_subs:
                 # SDCK_20241220_0117.spec.fits
@@ -287,9 +287,6 @@ if __name__ == "__main__":
             AB_subs = [
                 i for i in os.listdir(AB_subdir) if i.startswith('SDCK') and i.endswith('.spec.fits')
                 ]
-            # AB_subs.sort()
-            AB_subs = sorted(AB_subs, key=extract_sort_key)
-            print(AB_subs)
 
             for subAB in AB_subs:
                 # SDCK_20241220_0117.spec.fits
@@ -351,6 +348,9 @@ if __name__ == "__main__":
         A0_prepdata['press'].format = '.0f'
         A0_prepdata['airmass'].format = '.2f'
         # A0_prepdata['zd'].format = '.1f'
+
+    tar_prepdata.sort('jd')
+    A0_prepdata.sort('night', 'tag')
 
     tar_prepdata.write(
         f'./final_A_B_spec/{target}{Nextend}/Prepdata_targ_{target}.txt', 
