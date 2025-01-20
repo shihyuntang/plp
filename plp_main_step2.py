@@ -225,7 +225,7 @@ if __name__ == "__main__":
                 _h = fits.open(f'{AB_subdir}/{subAB}')
 
                 try:
-                    jd = (_h[0].header['JD-OBS'] + _h[0].header['JD-END']) / 2
+                    jd = (float(_h[0].header['JD-OBS']) + float(_h[0].header['JD-END'])) / 2
                 except KeyError:
                     l0 = []
                     for nm in ['DATE-OBS','DATE-END']:
