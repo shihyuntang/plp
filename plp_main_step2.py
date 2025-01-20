@@ -324,13 +324,12 @@ if __name__ == "__main__":
     tar_prepdata['airmass'].format = '.2f'
     tar_prepdata['bvc'].format = '10.6f'
 
-    A0_prepdata['zd'].format = '.1f'
-
     if 'McD' not in facility_box:
         A0_prepdata['humid'].format = '.0f'
         A0_prepdata['temp'].format = '.0f'
         A0_prepdata['press'].format = '.0f'
         A0_prepdata['airmass'].format = '.2f'
+        A0_prepdata['zd'].format = '.1f'
 
     
     tar_prepdata.write(
