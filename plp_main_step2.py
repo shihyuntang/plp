@@ -289,7 +289,7 @@ if __name__ == "__main__":
                 else:
                     sys.exit(f'Oops, cannot deal with {h_end[0].header["OBSERVAT"].lower()}')
                 
-                airmass = (_h[0].header['AMSTART'] + _h[0].header['AMEND']) / 2
+                airmass = (float(_h[0].header['AMSTART']) + float(_h[0].header['AMEND'])) / 2
 
                 rel_humidity = _h[0].header['HUMIDITY']
                 temp = _h[0].header['AIRTEMP']
