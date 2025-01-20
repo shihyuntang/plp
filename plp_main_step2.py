@@ -223,8 +223,17 @@ if __name__ == "__main__":
                 # SDCK_20241220_0117.spec.fits
                 tag  = subAB.split('_')[2].split('.')[0]
                 _h = fits.open(f'{AB_subdir}/{subAB}')
-                jd = (_h[0].header['JD-OBS'] + _h[0].header['JD-END']) / 2
 
+                try:
+                    jd = (_h[0].header['JD-OBS'] + _h[0].header['JD-END']) / 2
+                except KeyError:
+                    l0 = []
+                    for nm in ['DATE-OBS','DATE-END']:
+                        tt1 = _h[0].header[nm].split('-')
+                        t1 = Time(tt1[0]+'-'+tt1[1]+'-'+tt1[2]+' '+tt1[3],format='iso')
+                        l0.append(t1.jd)
+                    jd = np.mean(l0)
+        
                 if h_end[0].header['OBSERVAT'].lower() == 'lowell observatory':
                     facility = 'DCT'
                 elif (h_end[0].header['OBSERVAT'].lower() == 'mcdonald observatory') or (h_end[0].header['OBSERVAT'].lower()  == 'mcdonald'):
