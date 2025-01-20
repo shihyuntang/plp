@@ -289,6 +289,7 @@ if __name__ == "__main__":
                 ]
             # AB_subs.sort()
             AB_subs = sorted(AB_subs, key=extract_sort_key)
+            print(AB_subs)
 
             for subAB in AB_subs:
                 # SDCK_20241220_0117.spec.fits
@@ -338,14 +339,17 @@ if __name__ == "__main__":
     
     tar_prepdata['jd'].format = '.6f'
     tar_prepdata['airmass'].format = '.2f'
-    tar_prepdata['bvc'].format = '10.6f'
+    tar_prepdata['bvc'].format = '+11.6f'
+
+    A0_prepdata['airmass'].format = '.2f'
+    A0_prepdata['zd'].format = '.1f'
 
     if 'McD' not in facility_box:
         A0_prepdata['humid'].format = '.0f'
         A0_prepdata['temp'].format = '.0f'
         A0_prepdata['press'].format = '.0f'
         A0_prepdata['airmass'].format = '.2f'
-        A0_prepdata['zd'].format = '.1f'
+        # A0_prepdata['zd'].format = '.1f'
 
     tar_prepdata.write(
         f'./final_A_B_spec/{target}{Nextend}/Prepdata_targ_{target}.txt', 
