@@ -350,7 +350,7 @@ if __name__ == "__main__":
         # A0_prepdata['zd'].format = '.1f'
 
     tar_prepdata.sort('jd')
-    A0_prepdata.sort('night', 'tag')
+    A0_prepdata.sort(['night', 'tag'])
 
     tar_prepdata.write(
         f'./final_A_B_spec/{target}{Nextend}/Prepdata_targ_{target}.txt', 
