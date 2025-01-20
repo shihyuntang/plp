@@ -291,9 +291,9 @@ if __name__ == "__main__":
                 
                 airmass = (float(_h[0].header['AMSTART']) + float(_h[0].header['AMEND'])) / 2
 
-                rel_humidity = _h[0].header['HUMIDITY']
-                temp = _h[0].header['AIRTEMP']
-                press = _h[0].header['BARPRESS']
+                rel_humidity = float(_h[0].header['HUMIDITY'])
+                temp = float(_h[0].header['AIRTEMP'])
+                press = float(_h[0].header['BARPRESS'])
                 night_box.append(dd)
                 tag_box.append(tag)
                 try:
