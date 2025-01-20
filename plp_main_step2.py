@@ -315,6 +315,7 @@ if __name__ == "__main__":
                 tag_box.append(tag)
                 try:
                     zd = (float(_h[0].header['ZDSTART']) + float(_h[0].header['ZDEND'])) / 2
+                    zd = np.round(zd, 1)
                 except ValueError:
                     zd = 'NOINFO'                   
 
@@ -342,7 +343,7 @@ if __name__ == "__main__":
     tar_prepdata['bvc'].format = '+11.6f'
 
     A0_prepdata['airmass'].format = '.2f'
-    A0_prepdata['zd'].format = '.1f'
+    # A0_prepdata['zd'].format = '.1f'
 
     if 'McD' not in facility_box:
         A0_prepdata['humid'].format = '.0f'
