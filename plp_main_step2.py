@@ -219,6 +219,7 @@ if __name__ == "__main__":
             AB_subs = [
                 i for i in os.listdir(AB_subdir) if i.startswith('SDCK') and i.endswith('.spec.fits')
                 ]
+            AB_subs.sort()
             for subAB in AB_subs:
                 # SDCK_20241220_0117.spec.fits
                 tag  = subAB.split('_')[2].split('.')[0]
@@ -274,6 +275,7 @@ if __name__ == "__main__":
             AB_subs = [
                 i for i in os.listdir(AB_subdir) if i.startswith('SDCK') and i.endswith('.spec.fits')
                 ]
+            AB_subs.sort()
             for subAB in AB_subs:
                 # SDCK_20241220_0117.spec.fits
                 tag  = subAB.split('_')[2].split('.')[0]
