@@ -291,9 +291,9 @@ if __name__ == "__main__":
                 
                 airmass = (float(_h[0].header['AMSTART']) + float(_h[0].header['AMEND'])) / 2
 
-                rel_humidity = float(_h[0].header['HUMIDITY'])
-                temp = float(_h[0].header['AIRTEMP'])
-                press = float(_h[0].header['BARPRESS'])
+                rel_humidity = _h[0].header['HUMIDITY']
+                temp = _h[0].header['AIRTEMP']
+                press = _h[0].header['BARPRESS']
                 night_box.append(dd)
                 tag_box.append(tag)
                 try:
@@ -324,12 +324,12 @@ if __name__ == "__main__":
     tar_prepdata['airmass'].format = '.2f'
     tar_prepdata['bvc'].format = '10.6f'
 
-    if 'McD' not in facility_box:
-        A0_prepdata['humid'].format = '.0f'
-        A0_prepdata['temp'].format = '.0f'
-        A0_prepdata['press'].format = '.0f'
-        A0_prepdata['airmass'].format = '.2f'
-        A0_prepdata['zd'].format = '.1f'
+    # if 'McD' not in facility_box:
+    #     A0_prepdata['humid'].format = '.0f'
+    #     A0_prepdata['temp'].format = '.0f'
+    #     A0_prepdata['press'].format = '.0f'
+    #     A0_prepdata['airmass'].format = '.2f'
+    #     A0_prepdata['zd'].format = '.1f'
 
     
     tar_prepdata.write(
