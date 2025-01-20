@@ -2,7 +2,7 @@ import functions.make_AB_recipe as make_AB_recipe
 import sys, os, argparse, ast
 import numpy as np
 from astropy.io import fits
-from astroquery.simbad import Simbad
+# from astroquery.simbad import Simbad
 from astropy.coordinates import SkyCoord, ICRS, EarthLocation
 from astropy.time import Time
 from astropy import units as u
