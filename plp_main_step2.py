@@ -293,7 +293,7 @@ if __name__ == "__main__":
 
                 rel_humidity = _h[0].header['HUMIDITY']
                 temp = _h[0].header['AIRTEMP']
-                zd = (_h[0].header['ZDSTART'] + _h[0].header['ZDEND']) / 2
+                zd = (float(_h[0].header['ZDSTART']) + float(_h[0].header['ZDEND'])) / 2
                 press = _h[0].header['BARPRESS']
 
                 night_box.append(dd)
