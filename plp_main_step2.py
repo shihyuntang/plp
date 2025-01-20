@@ -8,6 +8,7 @@ from astropy.time import Time
 from astropy import units as u
 from astropy.table import Table
 
+
 def get_bvc(jd, obs, args):
     # ra_deg = np.array(ast.literal_eval(args.coord), dtype=float)[0]
     # de_deg = np.array(ast.literal_eval(args.coord), dtype=float)[1]
@@ -70,6 +71,15 @@ def get_bvc(jd, obs, args):
         )
     bvc   = barycorr.to(u.km/u.s).value
     return bvc
+
+
+# Define the sorting key function
+def extract_sort_key(filename):
+    # Extract the date and file number from the filename
+    parts = filename.split("_")
+    date = parts[1]
+    file_number = parts[2].split(".")[0]
+    return (date, int(file_number))
 
 
 if __name__ == "__main__":
@@ -219,7 +229,9 @@ if __name__ == "__main__":
             AB_subs = [
                 i for i in os.listdir(AB_subdir) if i.startswith('SDCK') and i.endswith('.spec.fits')
                 ]
-            AB_subs.sort()
+            # AB_subs.sort()
+            AB_subs = sorted(AB_subs, key=extract_sort_key)
+
             for subAB in AB_subs:
                 # SDCK_20241220_0117.spec.fits
                 tag  = subAB.split('_')[2].split('.')[0]
@@ -235,15 +247,15 @@ if __name__ == "__main__":
                         l0.append(t1.jd)
                     jd = np.mean(l0)
         
-                if h_end[0].header['OBSERVAT'].lower() == 'lowell observatory':
+                if _h[0].header['OBSERVAT'].lower() == 'lowell observatory':
                     facility = 'DCT'
-                elif (h_end[0].header['OBSERVAT'].lower() == 'mcdonald observatory') or (h_end[0].header['OBSERVAT'].lower()  == 'mcdonald'):
+                elif (_h[0].header['OBSERVAT'].lower() == 'mcdonald observatory') or (_h[0].header['OBSERVAT'].lower()  == 'mcdonald'):
                     facility = 'McD'
-                elif (h_end[0].header['OBSERVAT'].lower() == 'gemini observatory'):
-                    if (h_end[0].header['TELESCOP'].lower() == 'gemini south'):
+                elif (_h[0].header['OBSERVAT'].lower() == 'gemini observatory'):
+                    if (_h[0].header['TELESCOP'].lower() == 'gemini south'):
                         facility = 'GeminiS'
                 else:
-                    sys.exit(f'Oops, cannot deal with {h_end[0].header["OBSERVAT"].lower()}')
+                    sys.exit(f'Oops, cannot deal with {_h[0].header["OBSERVAT"].lower()}')
                 
                 airmass = (float(_h[0].header['AMSTART']) + float(_h[0].header['AMEND'])) / 2
                 bvc = get_bvc(jd, facility, args)
@@ -275,18 +287,20 @@ if __name__ == "__main__":
             AB_subs = [
                 i for i in os.listdir(AB_subdir) if i.startswith('SDCK') and i.endswith('.spec.fits')
                 ]
-            AB_subs.sort()
+            # AB_subs.sort()
+            AB_subs = sorted(AB_subs, key=extract_sort_key)
+
             for subAB in AB_subs:
                 # SDCK_20241220_0117.spec.fits
                 tag  = subAB.split('_')[2].split('.')[0]
                 _h = fits.open(f'{AB_subdir}/{subAB}')
 
-                if h_end[0].header['OBSERVAT'].lower() == 'lowell observatory':
+                if _h[0].header['OBSERVAT'].lower() == 'lowell observatory':
                     facility = 'DCT'
-                elif (h_end[0].header['OBSERVAT'].lower() == 'mcdonald observatory') or (h_end[0].header['OBSERVAT'].lower()  == 'mcdonald'):
+                elif (_h[0].header['OBSERVAT'].lower() == 'mcdonald observatory') or (_h[0].header['OBSERVAT'].lower()  == 'mcdonald'):
                     facility = 'McD'
-                elif (h_end[0].header['OBSERVAT'].lower() == 'gemini observatory'):
-                    if (h_end[0].header['TELESCOP'].lower() == 'gemini south'):
+                elif (_h[0].header['OBSERVAT'].lower() == 'gemini observatory'):
+                    if (_h[0].header['TELESCOP'].lower() == 'gemini south'):
                         facility = 'GeminiS'
                 else:
                     sys.exit(f'Oops, cannot deal with {h_end[0].header["OBSERVAT"].lower()}')
@@ -326,14 +340,13 @@ if __name__ == "__main__":
     tar_prepdata['airmass'].format = '.2f'
     tar_prepdata['bvc'].format = '10.6f'
 
-    # if 'McD' not in facility_box:
-    #     A0_prepdata['humid'].format = '.0f'
-    #     A0_prepdata['temp'].format = '.0f'
-    #     A0_prepdata['press'].format = '.0f'
-    #     A0_prepdata['airmass'].format = '.2f'
-    #     A0_prepdata['zd'].format = '.1f'
+    if 'McD' not in facility_box:
+        A0_prepdata['humid'].format = '.0f'
+        A0_prepdata['temp'].format = '.0f'
+        A0_prepdata['press'].format = '.0f'
+        A0_prepdata['airmass'].format = '.2f'
+        A0_prepdata['zd'].format = '.1f'
 
-    
     tar_prepdata.write(
         f'./final_A_B_spec/{target}{Nextend}/Prepdata_targ_{target}.txt', 
         format='ascii', overwrite=True)
