@@ -257,7 +257,11 @@ if __name__ == "__main__":
                 else:
                     sys.exit(f'Oops, cannot deal with {_h[0].header["OBSERVAT"].lower()}')
                 
-                airmass = (float(_h[0].header['AMSTART']) + float(_h[0].header['AMEND'])) / 2
+                try:
+                    airmass = (float(_h[0].header['AMSTART']) + float(_h[0].header['AMEND'])) / 2
+                except TypeError:
+                    sys.exit(f'Oops, cannot deal with {subAB}\'s AM. Got: {_h[0].header["AMSTART"]} and {_h[0].header["AMEND"]}')
+
                 bvc = get_bvc(jd, facility, args)
 
                 night_box.append(dd)
