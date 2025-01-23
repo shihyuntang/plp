@@ -260,7 +260,17 @@ if __name__ == "__main__":
                 try:
                     airmass = (float(_h[0].header['AMSTART']) + float(_h[0].header['AMEND'])) / 2
                 except TypeError:
-                    sys.exit(f'Oops, cannot deal with {subAB}\'s AM. Got: {_h[0].header["AMSTART"]} and {_h[0].header["AMEND"]}')
+                    print(f'\n   Oops, get non float value in {subAB}\'s AM.')
+                    print(f'   Get AMSTART:{_h[0].header["AMSTART"]}; AMEND:{_h[0].header["AMEND"]}')
+
+                    if isinstance(_h[0].header['AMSTART'], float):
+                        airmass = float(_h[0].header['AMSTART'])
+                        print(f'   Use AMSTART:{_h[0].header["AMSTART"]}')
+                    elif isinstance(_h[0].header['AMEND'], float):
+                        airmass = float(_h[0].header['AMEND'])
+                        print(f'   Use AMEND:{_h[0].header["AMEND"]}')
+                    else:
+                        sys.exit(f'   Cannot deal with {subAB}\'s AMSTART and AMEND.')
 
                 bvc = get_bvc(jd, facility, args)
 
