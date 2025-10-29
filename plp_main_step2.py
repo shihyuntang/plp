@@ -137,7 +137,8 @@ if __name__ == "__main__":
     #target_have = make_recipe.check_obs_dates(args.targname, indata_dir)
     new_tar_list = os.listdir('./recipes/{}_recipes'.format(args.targname.replace(' ','')))
     target_have = np.sort(
-        [ int(dump[:8]) for dump in new_tar_list if dump.endswith('.tmp') ])
+        [ int(dump[:8]) for dump in new_tar_list if dump.endswith('.tmp') ]
+        )
 
     tenn = ''
     for iii in target_have:

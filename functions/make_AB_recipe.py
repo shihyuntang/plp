@@ -22,7 +22,7 @@ def make_AB_recipe(target_n, utdates):
     new_recipe_fh2   = pwd + '/recipe_logs/{0:8d}.recipes'
 
     # new printout in the recipes
-    # a0std_str  = '{:s}, STD, {:d}, 1, {:f}, A0V_AB, {:02d} {:02d}, {:s} {:s}\n'
+    a0std_str  = '{:s}, STD, {:d}, 1, {:f}, A0V_AB,{},{}\n'
     target_str = '{:s}, TAR, {:d}, 1, {:f}, STELLAR_AB, {:02d} {:02d}, {:s} {:s} \n'
 
     print('-------------------------------------')
@@ -40,7 +40,7 @@ def make_AB_recipe(target_n, utdates):
     for i in utdates:
         # os.system("cp " + recipe_fh.format(i) + " " + new_recipe_fh1.format(i) )
         # remove origin ABBA rows
-        remove_rows = ['STELLAR_AB'] # only do target for seperate # , 'A0V_AB'
+        remove_rows = ['STELLAR_AB', 'A0V_AB'] # only do target for seperate # , 'A0V_AB'
         with open( recipe_fh.format(i) ) as oldfile, open( new_recipe_fh1.format(i), 'w') as newfile:
             for line in oldfile:
                 if not any(remove_row in line for remove_row in remove_rows):
@@ -48,6 +48,8 @@ def make_AB_recipe(target_n, utdates):
                     if '\n' not in line:
                         line = line + '\n'
                     if (line == "") or (line == "\n"):
+                        continue
+                    if line[0] == '#':
                         continue
                     newfile.write(line)
 
@@ -59,6 +61,7 @@ def make_AB_recipe(target_n, utdates):
         recipe  = pd.read_csv(recipe_fh.format(utdate), comment='#')
 
         # extract science & A0 standard star
+        recipe = recipe.dropna() # drop rows with nan
         science = recipe[recipe['OBJNAME'].str.contains(target_n, regex=True, flags=re.IGNORECASE)]
         A0std   = recipe[recipe[' OBJTYPE'].str.contains('STD', regex=True, flags=re.IGNORECASE)]
 
@@ -93,6 +96,7 @@ def make_AB_recipe(target_n, utdates):
             _frames = np.array( x[' FRAMETYPES'].strip().split(' ') )
             # extract the observation IDs for each nodding
             _ids    = [int(y) for y in x[' OBSIDS'].strip().split(' ')]
+            _group2 = x[' GROUP2'] # A0 tag
 
             # check if A nodding's number match the B's
             if np.where(_frames=='A')[0].size != np.where(_frames=='B')[0].size:
@@ -113,6 +117,19 @@ def make_AB_recipe(target_n, utdates):
                     #               tar_name       exp_time                 ----ids----   --frames--
                     # target_str = '{:s}, TAR, 1, 1, {:f}, STELLAR_AB,     {:02d} {:02d}, {:s} {:s}\n'
                     fh.write(target_str.format(x['OBJNAME'], kk[0], x[' EXPTIME'], kk[0], kk[1], ff[0], ff[1]))
+            
+        # search in the df, A0std, for column 'GROUP1' == _group2, and write the A0V_AB row
+        A0std = recipe[recipe[' GROUP1'] == _group2]
+        for jj, x in A0std.iterrows():
+            # extract the nodding sequences (e.g., ABBA)
+            _frames = x[' FRAMETYPES']
+            # extract the observation IDs for each nodding
+            _ids    = x[' OBSIDS']
+            
+            with open(new_recipe_fh1.format(utdate), 'a+') as fh:
+                #               tar_name       exp_time                 ----ids----   --frames--
+                # target_str = '{:s}, TAR, 1, 1, {:f}, STELLAR_AB,     {:02d} {:02d}, {:s} {:s}\n'
+                fh.write(a0std_str.format(x['OBJNAME'], int(_ids.strip().split(' ')[0]), x[' EXPTIME'], _ids, _frames))
 
     # copy the .recipes to the plp read dir
     for i in utdates:
@@ -265,8 +282,8 @@ def move_data_split(target_n, utdates, args):
     out_variance_fh_tar   = './final_A_B_spec/{:s}{:s}/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.variance.fits'
 
     # final spec store dir for STD
-    out_spec_fh_std = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
-    out_variance_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:d}/{:s}/SDC{:s}_{:d}_{:04d}.variance.fits'
+    out_spec_fh_std = './final_A_B_spec/{:s}{:s}/std/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.spec.fits'
+    out_variance_fh_std   = './final_A_B_spec/{:s}{:s}/std/{:s}/{:s}/SDC{:s}_{:d}_{:04d}.variance.fits'
 
     # new_recipe_fh_new   = pwd + '/recipe_logs/' + '{0:8d}.recipes'
     temp_recipe_fh      = pwd + '/recipes/' + target_n.replace(' ','') + '_recipes/{0:8d}.recipes.tmp'
@@ -290,8 +307,8 @@ def move_data_split(target_n, utdates, args):
         if args.mode.lower() == 'simple':
             mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/AB/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
 
-        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/A/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
-        mkdir("./final_A_B_spec/{:s}{:s}/std/{:d}/B/".format( target_n.replace(' ', ''), Nextend, int(ut[:8]) ))
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:s}/A/".format( target_n.replace(' ', ''), Nextend, ut ))
+        mkdir("./final_A_B_spec/{:s}{:s}/std/{:s}/B/".format( target_n.replace(' ', ''), Nextend, ut ))
 
         # base on the info. in .recipes file to move each spec to the right A or B folder
 #-------- science target--------------------------------
@@ -335,19 +352,19 @@ def move_data_split(target_n, utdates, args):
                     # copyfile(in_variance_fh.format(  int(ut[:8]), b, int(ut[:8]), kk[0]), out_variance_fh_std.format(  target_n.replace(' ',''), int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
                     # copy to A or B folder
                 if args.mode.lower() == 'simple':
-                    copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
-                    copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), 'AB', b, int(ut[:8]), kk[0]))
+                    copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_spec_fh_std.format(target_n.replace(' ',''), Nextend,ut, 'AB', b, int(ut[:8]), kk[0]))
+                    copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], 'AB'), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, ut, 'AB', b, int(ut[:8]), kk[0]))
 
-                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
-                copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[0], b, int(ut[:8]), kk[0]))
+                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[0], b, int(ut[:8]), kk[0]))
+                copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[0]), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, ut, ff[0], b, int(ut[:8]), kk[0]))
 
-                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
-                copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, int(ut[:8]), ff[1], b, int(ut[:8]), kk[1]))
+                copyfile(in_spec_fhab.format(int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_spec_fh_std.format(target_n.replace(' ',''), Nextend, ut, ff[1], b, int(ut[:8]), kk[1]))
+                copyfile(in_variance_fhab.format(  int(ut[:8]), b, int(ut[:8]), kk[0], ff[1]), out_variance_fh_std.format(  target_n.replace(' ',''), Nextend, ut, ff[1], b, int(ut[:8]), kk[1]))
 
 # ------- plp v3.0 save large debug files, remove them to save space -------
     for jj, ut in enumerate(utdates):
 
-        _files = os.listdir(f'./outdata/{ut}/')
+        _files = os.listdir(f'./outdata/{ut[:8]}/')
 
         # only keep the .spec, .variance, .sn files, and also those ended 
         # with .json, .csv, and .db files
@@ -362,7 +379,10 @@ def move_data_split(target_n, utdates, args):
 
         if len(rm_files) > 0:
             print('\n Clearing dir ./outdata/ ...')
-            for f in rm_files: os.remove(f'./outdata/{ut}/{f}')
+            try:
+                for f in rm_files: os.remove(f'./outdata/{ut[:8]}/{f}')
+            except:
+                print(f'Error in removing files in ./outdata/{ut[:8]}/{f}')
 
 
 
